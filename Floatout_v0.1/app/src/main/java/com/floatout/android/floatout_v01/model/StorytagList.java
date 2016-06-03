@@ -7,32 +7,15 @@ import java.util.HashMap;
  */
 public class StorytagList {
 
-
-    private String name;
     private HashMap<String, String> main;
 
     public StorytagList() {
     }
 
-//    public StorytagList(String storyName) {
-//        this.storyName = storyName;
-//    }
+    public StorytagList(HashMap<String, String> main){
 
-    public StorytagList(String name, HashMap<String, String> main){
-
-        this.name = "name";
-        this.main = main;
+       this.main = main;
     }
-
-//    public String getStoryTag() {
-//        return storyName;
-//    }
-
-
-    public String getName(){
-        return name;
-    }
-
 
     public HashMap<String, String> getMain() {
         return main;

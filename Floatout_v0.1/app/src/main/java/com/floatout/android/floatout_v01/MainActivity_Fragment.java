@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.floatout.android.floatout_v01.model.StorytagList;
+import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -32,12 +33,12 @@ public class MainActivity_Fragment extends Fragment {
     public MainActivity_Fragment() {
     }
 
-    /*public static MainActivity_Fragment newInstance(){
+    public static MainActivity_Fragment newInstance(){
         MainActivity_Fragment fragment = new MainActivity_Fragment();
         Bundle args = new Bundle();
         fragment.setArguments(args);
         return fragment;
-    }*/
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState){
@@ -56,8 +57,6 @@ public class MainActivity_Fragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
 
         View rootview = inflater.inflate(R.layout.fragment_mainactivity,container,false);
-
-
         initializeScreen(rootview);
 
         return rootview;
@@ -71,26 +70,20 @@ public class MainActivity_Fragment extends Fragment {
 
     private void initializeScreen(View rootView){
 
-
-
         mStoryTagList = (ListView) rootView.findViewById(R.id.storytag_list);
 
-        ref = FirebaseDatabase.getInstance().getReference().child("storyTags");
+        ref = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYTAGS);
 
         mStorytagListAdapter = new FirebaseListAdapter<StorytagList>(getActivity(),StorytagList.class,R.layout.list_item_storytag,ref) {
 
             @Override
             protected void populateView(View view, StorytagList model, int position) {
                 TextView storyTag = (TextView) view.findViewById(R.id.storytag_data);
-//                storyTag.setText(model.getStoryTag());
-//                storyTag.setText(model.getName());
-                storyTag.setText(model.getMain().get("storyName"));
+                storyTag.setText(model.getMain().get(Constants.FIREBASE_STORYTAG_KEY));
             }
         };
 
         mStoryTagList.setAdapter(mStorytagListAdapter);
-
-        //mStorytagListAdapter = new FirebaseListAdapter<StorytagList>
     }
 }
 
