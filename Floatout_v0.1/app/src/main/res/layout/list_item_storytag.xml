@@ -17,12 +17,13 @@
         android:src="@drawable/ic_whatshot_black_48dp" />
 
     <TextView
-        android:id="@+id/hashtag_data"
+        android:id="@+id/storytag_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:gravity="center_horizontal"
         android:textStyle="bold"
         android:textSize="30dp"
+        android:textColor="@color/black"
         />
 
 </LinearLayout>
