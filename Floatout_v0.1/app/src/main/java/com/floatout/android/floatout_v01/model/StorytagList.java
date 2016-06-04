@@ -8,18 +8,23 @@ import java.util.HashMap;
 public class StorytagList {
 
     private HashMap<String, String> main;
+    private int views;
 
     public StorytagList() {
     }
 
-    public StorytagList(HashMap<String, String> main){
+    public StorytagList(HashMap<String,String> main, int views){
 
-       this.main = main;
+        this.main= main;
+        this.views = views;
     }
 
     public HashMap<String, String> getMain() {
         return main;
     }
 
+    public int getViews() {
+        return views;
+    }
 }
 
