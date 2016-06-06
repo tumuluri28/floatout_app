@@ -19,7 +19,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -35,8 +34,6 @@ public class MainActivity_Fragment extends Fragment {
     private FirebaseListAdapter mStorytagListAdapter;
     private DatabaseReference ref;
     private DatabaseReference ref2;
-    private DataSnapshot ds;
-    private Query q;
 
     private ArrayList<String> storyNames = new ArrayList<>();
 
@@ -65,29 +62,23 @@ public class MainActivity_Fragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
         }
-        ref2 = FirebaseDatabase.getInstance().getReference("storyViews");
+
+        ref2 = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYTAGSTATS);
+        Log.v(LOG_TAG, "ref2 " + ref2);
         ref2.addValueEventListener(new ValueEventListener() {
+
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-
+                views.clear();
                 for(DataSnapshot child : dataSnapshot.getChildren()){
                     String r = child.getKey();
-                    //child.child(r).child("views").getValue();
-                    String t = dataSnapshot.getRef().child(r).child("views").getKey();
-                    child.child(t).getValue();
+                    String t = dataSnapshot.getRef().child(r).
+                            child(Constants.FIREBASE_STORYTAG_VIEWS).getKey();
+                    String view_Count = child.child(t).getValue().toString();
 
-                    views.add(child.child(t).getValue().toString());
-
-                    //child.child("1").child("views").getValue();
-                    //child.child(key).child("views").getValue();
-                    //views.add(child.child("views").getValue().toString());
-                    //Log.v(LOG_TAG, "children view " + child.child(key).child("views").getValue());
-
-                    //Log.v(LOG_TAG, "children view " +child.child(t).getValue());
+                    views.add(view_Count);
+                    Log.v(LOG_TAG, "views " + views);
                 }
-                //Log.v(LOG_TAG, "views" + views);
-
-                //Log.v(LOG_TAG, "children" + dataSnapshot.);
             }
 
             @Override
@@ -109,13 +100,6 @@ public class MainActivity_Fragment extends Fragment {
         View rootview = inflater.inflate(R.layout.fragment_mainactivity, container, false);
         initializeScreen(rootview);
 
-
-        //ref2.child("1").child("views").setValue(1);
-        //Log.v(LOG_TAG, "URL: "+ ref2.child("1").child("views"));
-
-        
-
-
         mStoryTagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -123,9 +107,7 @@ public class MainActivity_Fragment extends Fragment {
 
                 int index = 0;
                 v= 0;
-
                 Log.v(LOG_TAG, "stories " + storyNames);
-                //Log.v(LOG_TAG, "views " + views);
 
                 for (String stories : storyNames) {
                     if (selected == stories) {
@@ -133,41 +115,14 @@ public class MainActivity_Fragment extends Fragment {
                         v = Integer.parseInt(views.get(index));
                         v++;
 
-                        ref2.child(Integer.toString(index+1)).child("views").setValue(v);
+                        Log.v(LOG_TAG, "index" + index);
 
-                        Log.v(LOG_TAG, "views_inc " + v);
-                        /*views.set(index, views.get(index) + increment_view);
-                        views.get(index);
-                        Log.v(LOG_TAG, "view count" + views.get(index));*/
+                        ref2.child(Integer.toString(index+increment_view)).
+                                child(Constants.FIREBASE_STORYTAG_VIEWS).setValue(v);
                     }
                 }
-                Log.v(LOG_TAG, "URL " + ref2.child(Integer.toString(index+1)).child("views"));
-
-
-
-                //newref.child("views").setValue(1);
-                //Log.v(LOG_TAG, "storyviews:" + ref2.toString());
-                /*HashMap<String, String> main = new HashMap<String, String>();
-                main.put("storyName",selected);*/
-
-                /*StorytagViews vv = new StorytagViews(v);
-                ref = FirebaseDatabase.getInstance().getReference().child("storyViews");
-                DatabaseReference r = ref.child(Integer.toString(index)).getDatabase().getReference();
-                //DatabaseReference r = ref.push();
-                r.setValue(vv);
-               // ref.setValue(vv);*/
-
-
-                //Log.v(LOG_TAG, "updated view count" + views.toString());
-                //ref2 = FirebaseDatabase.getInstance().getReference().child(selected);
-                //ref2.setValue(1);
-
-                //Log.v(LOG_TAG,ref2.toString());
             }
         });
-
-
-
         return rootview;
     }
 
@@ -192,12 +147,10 @@ public class MainActivity_Fragment extends Fragment {
 
                 storyNames.add(model.getMain().get(Constants.FIREBASE_STORYTAG_KEY));
 
-                //views.add(model.getViews());
             }
         };
 
         mStoryTagList.setAdapter(mStorytagListAdapter);
-        //Log.v(LOG_TAG,"views" + views);
 
     }
 }
