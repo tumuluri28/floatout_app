@@ -13,9 +13,16 @@
 
     <string name="button_sign_in">Sign In</string>
 
-    <string name="text_dont_have_account">Don't have an account?</string>
+    <string name="no_account_text">No account?</string>
 
-    <string name="button_create_account">Create Account</string>
+    <string name="button_create_account">Create One</string>
+    <string name="title_activity_login">Login</string>
+
+    <string name="error_cannot_be_empty">Cannot be empty</string>
+    <string name="error_invalid_email">Invalid email</string>
+    <string name="error_password_short">Password length should be greater than six characters</string>
+
+
 
 
 </resources>

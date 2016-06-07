@@ -2,6 +2,7 @@ package com.floatout.android.floatout_v01;
 
 //import android.app.Fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -9,12 +10,15 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseListAdapter;
+import com.floatout.android.floatout_v01.login.LoginActivity;
 import com.floatout.android.floatout_v01.model.StorytagList;
 import com.floatout.android.floatout_v01.utils.Constants;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -31,9 +35,12 @@ public class MainActivity_Fragment extends Fragment {
 
     private ListView mStoryTagList;
 
+    private ImageButton menu_Button;
+
     private FirebaseListAdapter mStorytagListAdapter;
     private DatabaseReference ref;
     private DatabaseReference ref2;
+    private FirebaseAuth mAuth;
 
     private ArrayList<String> storyNames = new ArrayList<>();
 
@@ -63,6 +70,8 @@ public class MainActivity_Fragment extends Fragment {
         if (getArguments() != null) {
         }
 
+        mAuth.getInstance();
+
         ref2 = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYTAGSTATS);
         Log.v(LOG_TAG, "ref2 " + ref2);
         ref2.addValueEventListener(new ValueEventListener() {
@@ -70,7 +79,7 @@ public class MainActivity_Fragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 views.clear();
-                for(DataSnapshot child : dataSnapshot.getChildren()){
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
                     String r = child.getKey();
                     String t = dataSnapshot.getRef().child(r).
                             child(Constants.FIREBASE_STORYTAG_VIEWS).getKey();
@@ -100,13 +109,15 @@ public class MainActivity_Fragment extends Fragment {
         View rootview = inflater.inflate(R.layout.fragment_mainactivity, container, false);
         initializeScreen(rootview);
 
+        menuButtonListner(rootview);
+
         mStoryTagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String selected = ((TextView) view.findViewById(R.id.storytag_data)).getText().toString();
 
                 int index = 0;
-                v= 0;
+                v = 0;
                 Log.v(LOG_TAG, "stories " + storyNames);
 
                 for (String stories : storyNames) {
@@ -117,7 +128,7 @@ public class MainActivity_Fragment extends Fragment {
 
                         Log.v(LOG_TAG, "index" + index);
 
-                        ref2.child(Integer.toString(index+increment_view)).
+                        ref2.child(Integer.toString(index + increment_view)).
                                 child(Constants.FIREBASE_STORYTAG_VIEWS).setValue(v);
                     }
                 }
@@ -152,5 +163,22 @@ public class MainActivity_Fragment extends Fragment {
 
         mStoryTagList.setAdapter(mStorytagListAdapter);
 
+    }
+
+    private void menuButtonListner(View rootview) {
+
+        menu_Button = (ImageButton) rootview.findViewById(R.id.menu_button);
+
+        menu_Button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mAuth.getInstance().signOut();
+
+                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
     }
 }
