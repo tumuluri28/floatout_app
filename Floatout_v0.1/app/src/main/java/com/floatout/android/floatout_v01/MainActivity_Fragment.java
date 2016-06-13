@@ -146,7 +146,8 @@ public class MainActivity_Fragment extends Fragment {
 
                         storyId = ref2.child(Integer.toString(index + increment_view));
 
-                        DatabaseReference userViewsRef = storyId.child("users").child(uid).child("views");
+                        DatabaseReference userViewsRef = storyId.child(Constants.FIREBASE_USERS_STORYTAGSTATS).child(uid)
+                                .child(Constants.FIREBASE_LOCATION_USER_VIEWS_STORYTAGSTATS);
 
                         Log.v(LOG_TAG, "storyId " + storyId);
 

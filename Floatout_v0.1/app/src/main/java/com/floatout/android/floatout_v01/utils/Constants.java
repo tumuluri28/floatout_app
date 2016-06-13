@@ -14,4 +14,7 @@ public final class Constants {
     public static final String FIREBASE_PROPERTY_TIMESTAMP = "timestamp";
 
     public static final String FIREBASE_LOCATION_USERS = "users";
+
+    public static final String FIREBASE_USERS_STORYTAGSTATS = "users";
+    public static final String FIREBASE_LOCATION_USER_VIEWS_STORYTAGSTATS = "views";
 }
