@@ -112,7 +112,6 @@
                 style="@style/LoginCreateTextButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onSignInPressed"
                 android:text="@string/button_sign_in" />
         </LinearLayout>
     </LinearLayout>

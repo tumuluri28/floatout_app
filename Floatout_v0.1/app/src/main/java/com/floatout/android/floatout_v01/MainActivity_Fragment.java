@@ -19,10 +19,13 @@ import com.floatout.android.floatout_v01.login.LoginActivity;
 import com.floatout.android.floatout_v01.model.StorytagList;
 import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
@@ -40,15 +43,18 @@ public class MainActivity_Fragment extends Fragment {
     private FirebaseListAdapter mStorytagListAdapter;
     private DatabaseReference ref;
     private DatabaseReference ref2;
+    private DatabaseReference storyId;
     private FirebaseAuth mAuth;
 
     private ArrayList<String> storyNames = new ArrayList<>();
 
-    private ArrayList<String> views = new ArrayList<>();
+    private ArrayList<String> totalViews = new ArrayList<>();
 
     private static final int increment_view = 1;
 
-    private int v = 0;
+    private int v;
+
+    private String uid;
 
     private final String LOG_TAG = MainActivity_Fragment.class.getSimpleName();
 
@@ -70,7 +76,10 @@ public class MainActivity_Fragment extends Fragment {
         if (getArguments() != null) {
         }
 
-        mAuth.getInstance();
+        mAuth = FirebaseAuth.getInstance();
+
+        FirebaseUser user = mAuth.getCurrentUser();
+        uid = user.getUid();
 
         ref2 = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYTAGSTATS);
         Log.v(LOG_TAG, "ref2 " + ref2);
@@ -78,15 +87,18 @@ public class MainActivity_Fragment extends Fragment {
 
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                views.clear();
+                totalViews.clear();
+
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
+
+                    //Log.v(LOG_TAG, "child " + child);
+
                     String r = child.getKey();
                     String t = dataSnapshot.getRef().child(r).
-                            child(Constants.FIREBASE_STORYTAG_VIEWS).getKey();
-                    String view_Count = child.child(t).getValue().toString();
+                            child(Constants.FIREBASE_STORYTAG_TOTALVIEWS).getKey();
+                    String totalViewCount = child.child(t).getValue().toString();
 
-                    views.add(view_Count);
-                    Log.v(LOG_TAG, "views " + views);
+                    totalViews.add(totalViewCount);
                 }
             }
 
@@ -118,18 +130,43 @@ public class MainActivity_Fragment extends Fragment {
 
                 int index = 0;
                 v = 0;
-                Log.v(LOG_TAG, "stories " + storyNames);
+
+                //Log.v(LOG_TAG, "stories " + storyNames);
 
                 for (String stories : storyNames) {
                     if (selected == stories) {
                         index = storyNames.indexOf(selected);
-                        v = Integer.parseInt(views.get(index));
+                        v = Integer.parseInt(totalViews.get(index));
                         v++;
 
-                        Log.v(LOG_TAG, "index" + index);
+                        //Log.v(LOG_TAG, "index" + index);
 
                         ref2.child(Integer.toString(index + increment_view)).
-                                child(Constants.FIREBASE_STORYTAG_VIEWS).setValue(v);
+                                child(Constants.FIREBASE_STORYTAG_TOTALVIEWS).setValue(v);
+
+                        storyId = ref2.child(Integer.toString(index + increment_view));
+
+                        DatabaseReference userViewsRef = storyId.child("users").child(uid).child("views");
+
+                        Log.v(LOG_TAG, "storyId " + storyId);
+
+                        userViewsRef.runTransaction(new Transaction.Handler() {
+                            @Override
+                            public Transaction.Result doTransaction(MutableData currentData) {
+                                if(currentData.getValue() == null){
+                                    currentData.setValue(1);
+                                } else {
+                                    currentData.setValue((long) currentData.getValue() + 1 );
+                                }
+
+                                return Transaction.success(currentData);
+                            }
+
+                            @Override
+                            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+
+                            }
+                        });
                     }
                 }
             }
@@ -157,12 +194,10 @@ public class MainActivity_Fragment extends Fragment {
                 storyTag.setText(model.getMain().get(Constants.FIREBASE_STORYTAG_KEY));
 
                 storyNames.add(model.getMain().get(Constants.FIREBASE_STORYTAG_KEY));
-
             }
         };
 
         mStoryTagList.setAdapter(mStorytagListAdapter);
-
     }
 
     private void menuButtonListner(View rootview) {

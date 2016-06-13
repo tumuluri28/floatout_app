@@ -11,6 +11,7 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import com.floatout.android.floatout_v01.MainActivity;
 import com.floatout.android.floatout_v01.R;
@@ -44,6 +45,8 @@ public class CreateAccountActivity extends AppCompatActivity {
 
     private EditText mEditTextUsernameCreate, mEditTextEmailCreate, mEditTextPasswordCreate;
 
+    private TextView signInText;
+
     private String userName,email,password;
 
     @Override
@@ -54,7 +57,7 @@ public class CreateAccountActivity extends AppCompatActivity {
         grabInputData();
 
         mAuth =FirebaseAuth.getInstance();
-        ref = FirebaseDatabase.getInstance().getReference().child("users");
+        ref = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_USERS);
 
         createAccountButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -86,7 +89,6 @@ public class CreateAccountActivity extends AppCompatActivity {
 
                     }
                 });
-
             }
         });
 
@@ -104,6 +106,14 @@ public class CreateAccountActivity extends AppCompatActivity {
                 }
             }
         };
+
+        signInText.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CreateAccountActivity.this, LoginActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     @Override
@@ -117,6 +127,8 @@ public class CreateAccountActivity extends AppCompatActivity {
         mEditTextPasswordCreate = (EditText) findViewById(R.id.edit_text_password_create);
 
         createAccountButton = (Button) findViewById(R.id.button_create_account);
+
+        signInText = (TextView) findViewById(R.id.user_sign_in);
     }
 
     @Override
@@ -168,7 +180,6 @@ public class CreateAccountActivity extends AppCompatActivity {
                     userLocation.setValue(newUser);
                 }
             }
-
             @Override
             public void onCancelled(DatabaseError databaseError) {
 

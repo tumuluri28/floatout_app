@@ -9,7 +9,9 @@ public final class Constants {
     public static final String FIREBASE_STORYTAG_KEY="storyName";
 
     public static final String FIREBASE_LOCATION_STORYTAGSTATS = "storyTagStats";
-    public static final String FIREBASE_STORYTAG_VIEWS = "views";
+    public static final String FIREBASE_STORYTAG_TOTALVIEWS = "totalViews";
 
     public static final String FIREBASE_PROPERTY_TIMESTAMP = "timestamp";
+
+    public static final String FIREBASE_LOCATION_USERS = "users";
 }
