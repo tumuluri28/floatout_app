@@ -38,7 +38,7 @@ public class MainActivity_Fragment extends Fragment {
 
     private ListView mStoryTagList;
 
-    private ImageButton menu_Button;
+    private ImageButton menu_Button, camera_button;
 
     private FirebaseListAdapter mStorytagListAdapter;
     private DatabaseReference ref;
@@ -122,6 +122,8 @@ public class MainActivity_Fragment extends Fragment {
         initializeScreen(rootview);
 
         menuButtonListner(rootview);
+
+        cameraButtonListner(rootview);
 
         mStoryTagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -211,6 +213,20 @@ public class MainActivity_Fragment extends Fragment {
                 mAuth.getInstance().signOut();
 
                 Intent intent = new Intent(getActivity(), LoginActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
+        });
+    }
+
+    private void cameraButtonListner(View rootview){
+        camera_button = (ImageButton) rootview.findViewById(R.id.camera_button);
+
+        camera_button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(getActivity(), CameraActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
