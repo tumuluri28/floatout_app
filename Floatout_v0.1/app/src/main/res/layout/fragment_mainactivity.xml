@@ -16,8 +16,8 @@
             android:layout_weight="9"
             android:divider="@android:color/black"
             android:scrollbars="none"
-            android:layout_gravity="left"
-            android:dividerHeight="3dp" />
+            android:layout_gravity="center_horizontal"
+            android:dividerHeight="2dp" />
 
         <RelativeLayout
             android:layout_width="match_parent"

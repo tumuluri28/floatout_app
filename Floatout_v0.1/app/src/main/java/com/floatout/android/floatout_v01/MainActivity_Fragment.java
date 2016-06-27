@@ -119,12 +119,12 @@ public class MainActivity_Fragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 
         View rootview = inflater.inflate(R.layout.fragment_mainactivity, container, false);
+
         initializeScreen(rootview);
-
         menuButtonListner(rootview);
-
         cameraButtonListner(rootview);
 
+        //storeSharedPreferences();
         mStoryTagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -184,29 +184,22 @@ public class MainActivity_Fragment extends Fragment {
     }
 
     private void initializeScreen(View rootView) {
-
         mStoryTagList = (ListView) rootView.findViewById(R.id.storytag_list);
-
         ref = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYTAGS);
-
         mStorytagListAdapter = new FirebaseListAdapter<StorytagList>(getActivity(), StorytagList.class, R.layout.list_item_storytag, ref) {
-
             @Override
             protected void populateView(View view, StorytagList model, int position) {
                 TextView storyTag = (TextView) view.findViewById(R.id.storytag_data);
                 storyTag.setText(model.getMain().get(Constants.FIREBASE_STORYTAG_KEY));
-
                 storyNames.add(model.getMain().get(Constants.FIREBASE_STORYTAG_KEY));
+                Log.v(LOG_TAG,storyNames.toString());
             }
         };
-
         mStoryTagList.setAdapter(mStorytagListAdapter);
     }
 
     private void menuButtonListner(View rootview) {
-
         menu_Button = (ImageButton) rootview.findViewById(R.id.menu_button);
-
         menu_Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -222,7 +215,6 @@ public class MainActivity_Fragment extends Fragment {
 
     private void cameraButtonListner(View rootview){
         camera_button = (ImageButton) rootview.findViewById(R.id.camera_button);
-
         camera_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

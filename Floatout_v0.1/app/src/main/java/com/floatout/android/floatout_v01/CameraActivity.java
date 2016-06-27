@@ -224,14 +224,13 @@ public class CameraActivity extends AppCompatActivity {
                 }
                 private String save(byte[] bytes) throws IOException {
                     Bitmap bm = BitmapFactory.decodeByteArray(bytes,0, bytes.length);
-
                     ContextWrapper cw = new ContextWrapper(getApplicationContext());
                     File dir = cw.getDir("imageDir", Context.MODE_PRIVATE);
                     mypath = new File(dir, "image.jpg");
                     FileOutputStream fos = null;
                     try{
                         fos = new FileOutputStream(mypath);
-                        bm.compress(Bitmap.CompressFormat.JPEG,100, fos);
+                        bm.compress(Bitmap.CompressFormat.JPEG,80, fos);
                         fos.close();
                         bm.recycle();
                     }catch (Exception e){
