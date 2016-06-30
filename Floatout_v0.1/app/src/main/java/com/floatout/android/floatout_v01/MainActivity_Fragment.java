@@ -88,16 +88,11 @@ public class MainActivity_Fragment extends Fragment {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 totalViews.clear();
-
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-
-                    //Log.v(LOG_TAG, "child " + child);
-
                     String r = child.getKey();
                     String t = dataSnapshot.getRef().child(r).
                             child(Constants.FIREBASE_STORYTAG_TOTALVIEWS).getKey();
                     String totalViewCount = child.child(t).getValue().toString();
-
                     totalViews.add(totalViewCount);
                 }
             }
@@ -124,7 +119,6 @@ public class MainActivity_Fragment extends Fragment {
         menuButtonListner(rootview);
         cameraButtonListner(rootview);
 
-        //storeSharedPreferences();
         mStoryTagList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
@@ -132,16 +126,12 @@ public class MainActivity_Fragment extends Fragment {
 
                 int index = 0;
                 v = 0;
-
                 //Log.v(LOG_TAG, "stories " + storyNames);
-
                 for (String stories : storyNames) {
                     if (selected == stories) {
                         index = storyNames.indexOf(selected);
                         v = Integer.parseInt(totalViews.get(index));
                         v++;
-
-                        //Log.v(LOG_TAG, "index" + index);
 
                         ref2.child(Integer.toString(index + increment_view)).
                                 child(Constants.FIREBASE_STORYTAG_TOTALVIEWS).setValue(v);
@@ -161,17 +151,20 @@ public class MainActivity_Fragment extends Fragment {
                                 } else {
                                     currentData.setValue((long) currentData.getValue() + 1 );
                                 }
-
                                 return Transaction.success(currentData);
                             }
-
                             @Override
                             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
 
                             }
                         });
+                        Intent storyFeedIntent = new Intent(getActivity(),StoryFeedActivity.class);
+                        String storyId = Integer.toString(index + 1);
+                        storyFeedIntent.putExtra("storyId", storyId);
+                        startActivity(storyFeedIntent);
                     }
                 }
+
             }
         });
         return rootview;

@@ -22,5 +22,8 @@
     <string name="error_invalid_email">Invalid email</string>
     <string name="error_password_short">Password length should be greater than six characters</string>
 
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+
 
 </resources>

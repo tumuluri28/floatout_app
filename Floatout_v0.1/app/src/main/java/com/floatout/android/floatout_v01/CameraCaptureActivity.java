@@ -8,7 +8,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
-import android.util.Log;
 import android.util.Size;
 import android.view.View;
 import android.widget.EditText;
@@ -58,11 +57,10 @@ public class CameraCaptureActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_camera_capture);
 
         firebaseInitializations();
         initializeScreen();
-
-        setContentView(R.layout.activity_camera_capture);
         im = (ImageView) findViewById(R.id.image);
 
         Intent intent = getIntent();
@@ -104,8 +102,8 @@ public class CameraCaptureActivity extends AppCompatActivity {
                 databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED).child(storageBucket).setPriority(ServerValue.TIMESTAMP);
                 newPost.setValue(userEmail+newPost.getKey()+file.getLastPathSegment());
 
-                StorageReference ct = storageRef.child(storageBucket+"/"+userEmail+newPost.getKey()+file.getLastPathSegment());
-                UploadTask uploadTask = ct.putFile(file);
+                StorageReference storyIdBucket = storageRef.child(storageBucket+"/"+userEmail+newPost.getKey()+file.getLastPathSegment());
+                UploadTask uploadTask = storyIdBucket.putFile(file);
 
                 startIntent();
                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
@@ -153,7 +151,6 @@ public class CameraCaptureActivity extends AppCompatActivity {
 
     private void initializeScreen() {
         mCamera_Storytag_List = (Spinner) findViewById(R.id.camera_storytag_list);
-        storyNames.clear();
         mStorytagListAdapter = new FirebaseListAdapter<StorytagList>(CameraCaptureActivity.this, StorytagList.class, R.layout.camera_list_item_storytag, ref) {
             @Override
             protected void populateView(View view, StorytagList model, int position) {
@@ -163,7 +160,7 @@ public class CameraCaptureActivity extends AppCompatActivity {
             }
         };
         mCamera_Storytag_List.setAdapter(mStorytagListAdapter);
-        Log.v(LOG_TAG, Integer.toString(mCamera_Storytag_List.getChildCount()));
+        //Log.v(LOG_TAG, Integer.toString(mCamera_Storytag_List.getChildCount()));
     }
 
     private void startIntent() {
