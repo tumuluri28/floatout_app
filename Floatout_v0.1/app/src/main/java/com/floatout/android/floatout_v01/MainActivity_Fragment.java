@@ -2,7 +2,10 @@ package com.floatout.android.floatout_v01;
 
 //import android.app.Fragment;
 
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -25,9 +28,13 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.File;
 import java.util.ArrayList;
 
 
@@ -44,11 +51,23 @@ public class MainActivity_Fragment extends Fragment {
     private DatabaseReference ref;
     private DatabaseReference ref2;
     private DatabaseReference storyId;
+    private DatabaseReference storyFeed;
+    private DatabaseReference storyFeedDesc;
+    private DatabaseReference connectedRef;
     private FirebaseAuth mAuth;
 
-    private ArrayList<String> storyNames = new ArrayList<>();
+    private StorageReference storageRef;
+    private StorageReference storageStoryNumber;
 
+    private ArrayList<String> storyNames = new ArrayList<>();
     private ArrayList<String> totalViews = new ArrayList<>();
+    private ArrayList<String> storyIds = new ArrayList<>();
+    private ArrayList<String> cachePaths = new ArrayList<>();
+
+    boolean connected;
+
+    int i;
+    int cacheIndex;
 
     private static final int increment_view = 1;
 
@@ -76,38 +95,75 @@ public class MainActivity_Fragment extends Fragment {
         if (getArguments() != null) {
         }
 
-        mAuth = FirebaseAuth.getInstance();
-
-        FirebaseUser user = mAuth.getCurrentUser();
-        uid = user.getUid();
-
-        ref2 = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYTAGSTATS);
-        Log.v(LOG_TAG, "ref2 " + ref2);
-        ref2.addValueEventListener(new ValueEventListener() {
-
+        connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
+        connectedRef.addValueEventListener(new ValueEventListener() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                totalViews.clear();
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    String r = child.getKey();
-                    String t = dataSnapshot.getRef().child(r).
-                            child(Constants.FIREBASE_STORYTAG_TOTALVIEWS).getKey();
-                    String totalViewCount = child.child(t).getValue().toString();
-                    totalViews.add(totalViewCount);
+            public void onDataChange(DataSnapshot snapshot) {
+                connected = snapshot.getValue(Boolean.class);
+                if (connected) {
+                    System.out.println("connected");
+                    storageRef = FirebaseStorage.getInstance().getReference();
+
+                    storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
+                    storyFeedDesc = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED_DESC);
+                    Log.v(LOG_TAG, storyFeedDesc.toString());
+                    storyFeedDesc.runTransaction(new Transaction.Handler() {
+                        @Override
+                        public Transaction.Result doTransaction(MutableData mutableData) {
+                            storyIds.clear();
+                            for(MutableData data : mutableData.getChildren()){
+                                storyIds.add(data.getKey());
+                            }
+                            Log.v(LOG_TAG, "storyIds list " + storyIds.toString());
+                            return Transaction.success(mutableData);
+                        }
+                        @Override
+                        public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                            createDirs ();
+                            new BackgroundTask().execute();
+                        }
+                    });
+
+
+                    ref2 = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYTAGSTATS);
+                    ref2.addValueEventListener(new ValueEventListener() {
+
+                        @Override
+                        public void onDataChange(DataSnapshot dataSnapshot) {
+                            totalViews.clear();
+                            for (DataSnapshot child : dataSnapshot.getChildren()) {
+                                String r = child.getKey();
+                                String t = dataSnapshot.getRef().child(r).
+                                        child(Constants.FIREBASE_STORYTAG_TOTALVIEWS).getKey();
+                                String totalViewCount = child.child(t).getValue().toString();
+                                totalViews.add(totalViewCount);
+                            }
+                        }
+                        @Override
+                        public void onCancelled(DatabaseError databaseError) {
+
+                        }
+                    });
+
+                } else {
+                    System.out.println("not connected");
                 }
             }
 
             @Override
-            public void onCancelled(DatabaseError databaseError) {
-
+            public void onCancelled(DatabaseError error) {
+                System.err.println("Listener was cancelled");
             }
         });
+
+        mAuth = FirebaseAuth.getInstance();
+        FirebaseUser user = mAuth.getCurrentUser();
+        uid = user.getUid();
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
-
     }
 
     @Override
@@ -124,7 +180,7 @@ public class MainActivity_Fragment extends Fragment {
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
                 String selected = ((TextView) view.findViewById(R.id.storytag_data)).getText().toString();
 
-                int index = 0;
+                int index;
                 v = 0;
                 //Log.v(LOG_TAG, "stories " + storyNames);
                 for (String stories : storyNames) {
@@ -160,20 +216,21 @@ public class MainActivity_Fragment extends Fragment {
                         });
                         Intent storyFeedIntent = new Intent(getActivity(),StoryFeedActivity.class);
                         String storyId = Integer.toString(index + 1);
+
+                        /*for(String a: cachePaths){
+                            if(a.indexOf("Feed"+storyId) >= 0){
+                                cacheIndex = cachePaths.indexOf(a);
+                            }
+                        }*/
+                        String pressedStoryCachePath = cachePaths.get(index);
+                        storyFeedIntent.putExtra("storyIdCachePath", pressedStoryCachePath);
                         storyFeedIntent.putExtra("storyId", storyId);
                         startActivity(storyFeedIntent);
                     }
                 }
-
             }
         });
         return rootview;
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        mStorytagListAdapter.cleanup();
     }
 
     private void initializeScreen(View rootView) {
@@ -218,4 +275,56 @@ public class MainActivity_Fragment extends Fragment {
             }
         });
     }
+
+    private void createDirs () {
+        ContextWrapper cw = new ContextWrapper(getActivity().getApplicationContext());
+        cachePaths.clear();
+        for(final String storyId: storyIds){
+            File dir = cw.getDir("storyFeed"+storyId, Context.MODE_PRIVATE);
+            cachePaths.add(dir.getAbsolutePath());
+        }
+        Log.v(LOG_TAG,"yola " + cachePaths.toString());
+    }
+
+    private class BackgroundTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... params) {
+            for(final String storyId: storyIds){
+                Query storyFeedIdref = storyFeed.child(storyId);
+                storyFeedIdref.limitToFirst(5).addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        for(DataSnapshot ds: dataSnapshot.getChildren()) {
+                            //Log.v(LOG_TAG, ds.toString());
+                            storageStoryNumber = storageRef.child(storyId + "/" + ds.getValue().toString());
+                            Log.v(LOG_TAG, storageStoryNumber.getPath());
+                            File path = new File(cachePaths.get(storyIds.indexOf(storyId)), ds.getValue().toString());
+                            storageStoryNumber.getFile(path);
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                });
+
+            }
+            return null;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        new BackgroundTask().execute();
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        mStorytagListAdapter.cleanup();
+        new BackgroundTask().cancel(true);
+    }
+
 }

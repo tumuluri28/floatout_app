@@ -24,7 +24,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ServerValue;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -99,7 +98,7 @@ public class CameraCaptureActivity extends AppCompatActivity {
                 Uri file = Uri.fromFile(f);
 
                 DatabaseReference newPost = databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED).child(storageBucket).push();
-                databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED).child(storageBucket).setPriority(ServerValue.TIMESTAMP);
+                databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED).child(storageBucket);
                 newPost.setValue(userEmail+newPost.getKey()+file.getLastPathSegment());
 
                 StorageReference storyIdBucket = storageRef.child(storageBucket+"/"+userEmail+newPost.getKey()+file.getLastPathSegment());

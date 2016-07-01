@@ -1,7 +1,5 @@
 package com.floatout.android.floatout_v01;
 
-import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -10,14 +8,8 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 
-import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.MutableData;
-import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -42,7 +34,7 @@ public class StoryFeedActivity extends AppCompatActivity {
     private ArrayList<String> textViewStoryDesc = new ArrayList<>();
     private ArrayList<String> paths = new ArrayList<>();
 
-    String storyId;
+    String storyIdCachePath, storyId;
     String LOG_TAG = StoryFeedActivity.class.getSimpleName();
 
     @Override
@@ -52,15 +44,16 @@ public class StoryFeedActivity extends AppCompatActivity {
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
 
-        storyFeed = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYFEED);
+        /*storyFeed = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYFEED);
         storyFeedDesc = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYFEED_DESC);
         mAuth = FirebaseAuth.getInstance();
-        storageRef = fStorage.getInstance().getReference();
+        storageRef = fStorage.getInstance().getReference();*/
 
         Intent intent = getIntent();
+        storyIdCachePath = intent.getStringExtra("storyIdCachePath");
         storyId = intent.getStringExtra("storyId");
-
-        final DatabaseReference storyIdFeed = storyFeed.child(storyId);
+        Log.v(LOG_TAG, storyId);
+        /*final DatabaseReference storyIdFeed = storyFeed.child(storyId);
         DatabaseReference storyIdFeedDesc = storyFeedDesc.child(storyId);
 
         storyIdFeed.runTransaction(new Transaction.Handler() {
@@ -95,35 +88,75 @@ public class StoryFeedActivity extends AppCompatActivity {
             }
         });
 
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+                
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });*/
+        passData(storyIdCachePath);
+
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+                Log.v(LOG_TAG, "swiped page " + position);
+            }
+
+            @Override
+            public void onPageSelected(int position) {
+
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
+
+            }
+        });
+
+
+
     }
 
-    private void passData(String storyId) {
-        getDataFromStorage(storyId);
-        File imageFile;
+    private void passData(String storyIdCachePath) {
+        //getDataFromStorage(storyId);
+        File dir = new File(storyIdCachePath);
+        File[] imageFiles = dir.listFiles();
         ArrayList<Bitmap> bm = new ArrayList<>();
         try {
-            for (String path : paths) {
-                imageFile = new File(path);
-                bm.add(BitmapFactory.decodeStream(new FileInputStream(imageFile)));
+            for (File child : imageFiles) {
+                bm.add(BitmapFactory.decodeStream(new FileInputStream(child)));
             }
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }
-        Log.v(LOG_TAG, "Size " + Integer.toString(bm.size()));
-        mStatePageAdapter = new StorySlidePageAdapter(getSupportFragmentManager(),this, bm.size(),bm,textViewStoryDesc);
-        viewPager.setAdapter(mStatePageAdapter);
+        finally {
+            Log.v(LOG_TAG, "Size " + Integer.toString(bm.size()));
+            mStatePageAdapter = new StorySlidePageAdapter(getSupportFragmentManager(),this, bm.size(),bm,textViewStoryDesc);
+            viewPager.setAdapter(mStatePageAdapter);
+        }
+
         //mStatePageAdapter = new StorySlidePageAdapter(getSupportFragmentManager(), this, paths.size(), )
     }
 
-    private void getDataFromStorage(String storyId) {
+    /*private void getDataFromStorage(String storyId) {
         Log.v(LOG_TAG, "hello2 " + storageLocationStoryFeed.toString());
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File dir = cw.getDir("storyFeed"+storyId, Context.MODE_PRIVATE);
-        for(int storyNumber = storageLocationStoryFeed.size() - 1; storyNumber >= 0 ; storyNumber--){
+        for(int storyNumber = 0; storyNumber < storageLocationStoryFeed.size(); storyNumber++){
             storageStoryNumber = storageRef.child(storyId+"/"+storageLocationStoryFeed.get(storyNumber));
             File path = new File(dir, storageLocationStoryFeed.get(storyNumber));
             storageStoryNumber.getFile(path);
             paths.add(path.toString());
         }
-    }
+    }*/
 }

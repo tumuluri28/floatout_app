@@ -30,7 +30,7 @@ public class StorySlidePageAdapter extends FragmentStatePagerAdapter {
         StoryFeed fragment = new StoryFeed();
         if(!bm.isEmpty()){
             fragment.setImage(bm.get(position));
-            fragment.setStory(story.get(position));
+            //fragment.setStory(story.get(position));
         }
         return fragment;
     }
