@@ -39,4 +39,12 @@ public class StorySlidePageAdapter extends FragmentStatePagerAdapter {
     public int getCount(){
         return storyCount;
     }
+
+    public void setStoryCount() {
+        storyCount = bm.size();
+    }
+
+    public void setStory(ArrayList<Bitmap> bm) {
+        this.bm = bm;
+    }
 }

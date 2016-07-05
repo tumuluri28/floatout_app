@@ -42,7 +42,25 @@ public class StoryFeed extends Fragment {
     }
 
     public void setThings() {
-        im.setImageBitmap(bm);
+        if(bm!= null && !bm.isRecycled()){
+            im.setImageBitmap(bm);
+        }else{
+            try {
+                bm.recycle();
+            }catch (NullPointerException e){
+
+            }
+        }
         tv.setText(story);
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        try {
+            bm.recycle();
+        }catch (NullPointerException e){
+
+        }
     }
 }

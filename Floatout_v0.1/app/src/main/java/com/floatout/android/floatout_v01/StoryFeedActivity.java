@@ -3,13 +3,22 @@ package com.floatout.android.floatout_v01;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.ImageView;
+import android.widget.Toast;
 
+import com.floatout.android.floatout_v01.Gesture.OnSwipeTouchListener;
+import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -18,7 +27,9 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
-public class StoryFeedActivity extends AppCompatActivity {
+public class StoryFeedActivity extends AppCompatActivity  {
+
+    private ImageView storyImage;
 
     private ViewPager viewPager;
     private StorySlidePageAdapter mStatePageAdapter;
@@ -33,105 +44,146 @@ public class StoryFeedActivity extends AppCompatActivity {
     private ArrayList<String> databaseLocationStoryDescKey = new ArrayList<>();
     private ArrayList<String> textViewStoryDesc = new ArrayList<>();
     private ArrayList<String> paths = new ArrayList<>();
+    private ArrayList<String> storyFeedList = new ArrayList<>();
+
+    ArrayList<Bitmap> bm = new ArrayList<>();
+    ArrayList<Bitmap> bm2;
+
+    private ArrayList<String> backgroundTaskData = new ArrayList<>();
+
+    int numOfChildren = 0;
+    int tracker = 4;
+    int segmentTracker = 0;
+    int flag= 0;
+    int imageTracker = 0;
+    int refreshFlag = 0;
+    int storyEndFlag = 0;
 
     String storyIdCachePath, storyId;
     String LOG_TAG = StoryFeedActivity.class.getSimpleName();
+
+    BackgroundDeleteFilesTask bt = new BackgroundDeleteFilesTask();
+    BackgroundDownloadTask bdt = new BackgroundDownloadTask();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_feed);
 
+
+
+        storyImage = (ImageView) findViewById(R.id.image);
+
         viewPager = (ViewPager) findViewById(R.id.viewpager);
 
-        /*storyFeed = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYFEED);
-        storyFeedDesc = FirebaseDatabase.getInstance().getReference().child(Constants.FIREBASE_LOCATION_STORYFEED_DESC);
+        storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
         mAuth = FirebaseAuth.getInstance();
-        storageRef = fStorage.getInstance().getReference();*/
+        storageRef = fStorage.getInstance().getReference();
 
-        Intent intent = getIntent();
+        final Intent intent = getIntent();
         storyIdCachePath = intent.getStringExtra("storyIdCachePath");
         storyId = intent.getStringExtra("storyId");
+
+        DatabaseReference storyFeedIdref = storyFeed.child(storyId);
+        storyFeedIdref.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                storyFeedList.clear();
+                numOfChildren = (int) dataSnapshot.getChildrenCount();
+                for(DataSnapshot data: dataSnapshot.getChildren()){
+                    storyFeedList.add(data.getValue().toString());
+                }
+                segmentTracker = numOfChildren/5;
+                flag = 1;
+                Log.v(LOG_TAG, "children " + Integer.toString(storyFeedList.size()));
+                Log.v(LOG_TAG, "i is " + Integer.toString(segmentTracker));
+                Log.v(LOG_TAG, "children count " + Integer.toString(numOfChildren));
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+
         Log.v(LOG_TAG, storyId);
-        /*final DatabaseReference storyIdFeed = storyFeed.child(storyId);
-        DatabaseReference storyIdFeedDesc = storyFeedDesc.child(storyId);
 
-        storyIdFeed.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData currentData) {
-                for (MutableData data : currentData.getChildren()) {
-                    storageLocationStoryFeed.add(data.getValue().toString());
-                    databaseLocationStoryDescKey.add(data.getKey());
-                }
-                return Transaction.success(currentData);
-            }
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-            }
-        });
-
-        storyIdFeedDesc.runTransaction(new Transaction.Handler() {
-            @Override
-            public Transaction.Result doTransaction(MutableData currentData) {
-                for(String key : databaseLocationStoryDescKey){
-                    String storyDesc = currentData.child(key).getValue().toString();
-                    textViewStoryDesc.add(storyDesc);
-                }
-                Log.v(LOG_TAG, "hello " + textViewStoryDesc.toString());
-                Log.v(LOG_TAG, "blah blah " + storageLocationStoryFeed.toString());
-                return Transaction.success(currentData);
-            }
-            @Override
-            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                //getDataFromStorage(storyId);
-                passData(storyId);
-            }
-        });
-
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-
-            }
-
-            @Override
-            public void onPageSelected(int position) {
-                
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });*/
         passData(storyIdCachePath);
 
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                Log.v(LOG_TAG, "swiped page " + position);
+        storyImage.setOnTouchListener(new OnSwipeTouchListener(StoryFeedActivity.this) {
+            public void onSwipeTop() {
+                Toast.makeText(StoryFeedActivity.this, "top", Toast.LENGTH_SHORT).show();
+                Intent intent  = new Intent(StoryFeedActivity.this, MainActivity.class);
+                intent.putExtra("rtnStoryIdCachePath", storyIdCachePath);
+                intent.putExtra("rtnStoryId", storyId);
+                startActivity(intent);
+            }
+            public void onSwipeRight() {
+                Toast.makeText(StoryFeedActivity.this, "right", Toast.LENGTH_SHORT).show();
+            }
+            public void onSwipeLeft() {
+                //Toast.makeText(StoryFeedActivity.this, "left", Toast.LENGTH_SHORT).show();
+                if(imageTracker == 1 && bt.getStatus() != AsyncTask.Status.FINISHED ){
+                    bt.execute();
+                }
+                if(bt.getStatus() == AsyncTask.Status.FINISHED && bdt.getStatus() != AsyncTask.Status.FINISHED) {
+                    Log.v(LOG_TAG, "segments " + Integer.toString(segmentTracker));
+                    if(segmentTracker != 0){
+                        bdt.execute();
+                    }
+                    else{}
+                }
+                if (imageTracker == bm.size() && bdt.getStatus() == AsyncTask.Status.FINISHED ){
+                    if(segmentTracker != 0) {
+                        imageTracker = 0;
+                        bm.clear();
+                        bt.restart();
+                        bdt.restart();
+                        getData(storyIdCachePath);
+                    }
+                    if(storyEndFlag == 1){
+                        onSwipeTop();
+                        return;
+                    }
+                    if(segmentTracker == 0){
+                        imageTracker = 0;
+                        bm.clear();
+                        getData(storyIdCachePath);
+                        storyEndFlag = 1;
+                    }
+                }
+                if(imageTracker < bm.size()) {
+                    Log.v(LOG_TAG, "story number " + Integer.toString(imageTracker));
+                    storyImage.setImageBitmap(bm.get(imageTracker));
+                    imageTracker++;
+                }
+            }
+            public void onSwipeBottom() {
+                Toast.makeText(StoryFeedActivity.this, "bottom", Toast.LENGTH_SHORT).show();
             }
 
-            @Override
-            public void onPageSelected(int position) {
-
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
         });
-
-
-
     }
 
     private void passData(String storyIdCachePath) {
         //getDataFromStorage(storyId);
         File dir = new File(storyIdCachePath);
         File[] imageFiles = dir.listFiles();
-        ArrayList<Bitmap> bm = new ArrayList<>();
+        try {
+            for (File child : imageFiles) {
+                bm.add(BitmapFactory.decodeStream(new FileInputStream(child)));
+            }
+            Log.v(LOG_TAG, "Size " + Integer.toString(bm.size()));
+            if(!bm.isEmpty()) {
+                storyImage.setImageBitmap(bm.get(0));
+                imageTracker++;
+            }
+        }catch (FileNotFoundException e){
+            e.printStackTrace();
+        }
+    }
+
+    private void getData(String storyIdCachePath){
+        File dir = new File(storyIdCachePath);
+        File[] imageFiles = dir.listFiles();
         try {
             for (File child : imageFiles) {
                 bm.add(BitmapFactory.decodeStream(new FileInputStream(child)));
@@ -139,24 +191,87 @@ public class StoryFeedActivity extends AppCompatActivity {
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }
-        finally {
-            Log.v(LOG_TAG, "Size " + Integer.toString(bm.size()));
-            mStatePageAdapter = new StorySlidePageAdapter(getSupportFragmentManager(),this, bm.size(),bm,textViewStoryDesc);
-            viewPager.setAdapter(mStatePageAdapter);
-        }
 
-        //mStatePageAdapter = new StorySlidePageAdapter(getSupportFragmentManager(), this, paths.size(), )
     }
 
-    /*private void getDataFromStorage(String storyId) {
-        Log.v(LOG_TAG, "hello2 " + storageLocationStoryFeed.toString());
-        ContextWrapper cw = new ContextWrapper(getApplicationContext());
-        File dir = cw.getDir("storyFeed"+storyId, Context.MODE_PRIVATE);
-        for(int storyNumber = 0; storyNumber < storageLocationStoryFeed.size(); storyNumber++){
-            storageStoryNumber = storageRef.child(storyId+"/"+storageLocationStoryFeed.get(storyNumber));
-            File path = new File(dir, storageLocationStoryFeed.get(storyNumber));
-            storageStoryNumber.getFile(path);
-            paths.add(path.toString());
+    private class BackgroundDeleteFilesTask extends AsyncTask<Void,Void,Void>{
+        public void restart(){
+            bt = new BackgroundDeleteFilesTask();
         }
-    }*/
+        @Override
+        protected synchronized Void doInBackground(Void... params) {
+            Log.v(LOG_TAG, "I'm here");
+            File dir = new File(storyIdCachePath);
+            File[] imageFiles = dir.listFiles();
+            if(imageFiles.toString() != null){
+                for(File image: imageFiles){
+                    image.delete();
+                }
+            }
+            return null;
+        }
+    }
+
+    private class BackgroundDownloadTask extends AsyncTask<Void, Void, Void>{
+        public void restart(){
+            bdt = new BackgroundDownloadTask();
+        }
+
+        @Override
+        protected synchronized Void doInBackground(Void... params) {
+            if(numOfChildren <= 5){
+                storyEndFlag = 1;
+            }
+            /*if(numOfChildren > 5 && segmentTracker == 1 && !storyFeedList.isEmpty()){
+                for(String story: storyFeedList.subList(tracker+1,storyFeedList.size())){
+                    Log.v(LOG_TAG, "children now " + story);
+                    storageStoryNumber = storageRef.child(storyId+"/"+story);
+                    File path = new File(storyIdCachePath, story);
+                    storageStoryNumber.getFile(path);
+                }
+                segmentTracker--;
+            }*/
+            else if(numOfChildren > 5 && segmentTracker >= 1 && !storyFeedList.isEmpty()){
+                if(segmentTracker > 1) {
+                    for (String story : storyFeedList.subList(tracker + 1, tracker + 6)) {
+                        Log.v(LOG_TAG, "children now " + story);
+                        storageStoryNumber = storageRef.child(storyId + "/" + story);
+                        File path = new File(storyIdCachePath, story);
+                        storageStoryNumber.getFile(path);
+                    }
+                    tracker = tracker + 5;
+                    segmentTracker--;
+                }else{
+                    for (String story : storyFeedList.subList(tracker + 1, storyFeedList.size())) {
+                        Log.v(LOG_TAG, "children now " + story);
+                        storageStoryNumber = storageRef.child(storyId + "/" + story);
+                        File path = new File(storyIdCachePath, story);
+                        storageStoryNumber.getFile(path);
+                    }
+                    segmentTracker--;
+                }
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            //passData(storyIdCachePath);
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        bm.clear();
+        bt.restart();
+        bt.execute();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+    }
 }

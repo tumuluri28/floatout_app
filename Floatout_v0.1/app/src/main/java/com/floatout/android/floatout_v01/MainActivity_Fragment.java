@@ -68,14 +68,18 @@ public class MainActivity_Fragment extends Fragment {
 
     int i;
     int cacheIndex;
-
     private static final int increment_view = 1;
-
     private int v;
+    int flag = 0;
 
     private String uid;
+    private String rtnStoryIdCachePath;
+    private String rtnStoryId;
 
     private final String LOG_TAG = MainActivity_Fragment.class.getSimpleName();
+
+    //BackgroundTask bt = new BackgroundTask();
+    BackgroundRtnDownloadTask rtnBt;
 
 
     public MainActivity_Fragment() {
@@ -95,6 +99,8 @@ public class MainActivity_Fragment extends Fragment {
         if (getArguments() != null) {
         }
 
+        rtnBt = new BackgroundRtnDownloadTask();
+
         connectedRef = FirebaseDatabase.getInstance().getReference(".info/connected");
         connectedRef.addValueEventListener(new ValueEventListener() {
             @Override
@@ -103,10 +109,9 @@ public class MainActivity_Fragment extends Fragment {
                 if (connected) {
                     System.out.println("connected");
                     storageRef = FirebaseStorage.getInstance().getReference();
-
                     storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
                     storyFeedDesc = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED_DESC);
-                    Log.v(LOG_TAG, storyFeedDesc.toString());
+                    //Log.v(LOG_TAG, storyFeedDesc.toString());
                     storyFeedDesc.runTransaction(new Transaction.Handler() {
                         @Override
                         public Transaction.Result doTransaction(MutableData mutableData) {
@@ -119,8 +124,11 @@ public class MainActivity_Fragment extends Fragment {
                         }
                         @Override
                         public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                            createDirs ();
-                            new BackgroundTask().execute();
+                            if(flag == 0) {
+                                createDirs();
+                                new BackgroundTask().execute();
+                                flag = 1;
+                            }
                         }
                     });
 
@@ -159,11 +167,6 @@ public class MainActivity_Fragment extends Fragment {
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         uid = user.getUid();
-    }
-
-    @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
     }
 
     @Override
@@ -295,9 +298,7 @@ public class MainActivity_Fragment extends Fragment {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
                         for(DataSnapshot ds: dataSnapshot.getChildren()) {
-                            //Log.v(LOG_TAG, ds.toString());
                             storageStoryNumber = storageRef.child(storyId + "/" + ds.getValue().toString());
-                            Log.v(LOG_TAG, storageStoryNumber.getPath());
                             File path = new File(cachePaths.get(storyIds.indexOf(storyId)), ds.getValue().toString());
                             storageStoryNumber.getFile(path);
                         }
@@ -307,7 +308,6 @@ public class MainActivity_Fragment extends Fragment {
 
                     }
                 });
-
             }
             return null;
         }
@@ -317,7 +317,6 @@ public class MainActivity_Fragment extends Fragment {
     public void onResume() {
         super.onResume();
         new BackgroundTask().execute();
-
     }
 
     @Override
@@ -327,4 +326,25 @@ public class MainActivity_Fragment extends Fragment {
         new BackgroundTask().cancel(true);
     }
 
+    private class BackgroundRtnDownloadTask extends AsyncTask<Void, Void, Void>{
+        @Override
+        protected Void doInBackground(Void... params) {
+            Query storyFeedIdref = storyFeed.child(rtnStoryId);
+            storyFeedIdref.limitToFirst(5).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    for(DataSnapshot ds: dataSnapshot.getChildren()) {
+                        storageStoryNumber = storageRef.child(storyId + "/" + ds.getValue().toString());
+                        File path = new File(rtnStoryIdCachePath, ds.getValue().toString());
+                        storageStoryNumber.getFile(path);
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            return null;
+        }
+    }
 }
