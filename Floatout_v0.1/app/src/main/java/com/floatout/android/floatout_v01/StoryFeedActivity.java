@@ -70,8 +70,6 @@ public class StoryFeedActivity extends AppCompatActivity  {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_story_feed);
 
-
-
         storyImage = (ImageView) findViewById(R.id.image);
 
         viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -112,6 +110,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
             public void onSwipeTop() {
                 Toast.makeText(StoryFeedActivity.this, "top", Toast.LENGTH_SHORT).show();
                 Intent intent  = new Intent(StoryFeedActivity.this, MainActivity.class);
+                intent.putExtra("storyFeedIntentFlag", "storyFeedIntentFlag");
                 intent.putExtra("rtnStoryIdCachePath", storyIdCachePath);
                 intent.putExtra("rtnStoryId", storyId);
                 startActivity(intent);
@@ -123,6 +122,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
                 //Toast.makeText(StoryFeedActivity.this, "left", Toast.LENGTH_SHORT).show();
                 if(imageTracker == 1 && bt.getStatus() != AsyncTask.Status.FINISHED ){
                     bt.execute();
+
                 }
                 if(bt.getStatus() == AsyncTask.Status.FINISHED && bdt.getStatus() != AsyncTask.Status.FINISHED) {
                     Log.v(LOG_TAG, "segments " + Integer.toString(segmentTracker));
@@ -131,7 +131,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
                     }
                     else{}
                 }
-                if (imageTracker == bm.size() && bdt.getStatus() == AsyncTask.Status.FINISHED ){
+                if (imageTracker == bm.size() && bdt.getStatus() == AsyncTask.Status.FINISHED){
                     if(segmentTracker != 0) {
                         imageTracker = 0;
                         bm.clear();
@@ -141,7 +141,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
                     }
                     if(storyEndFlag == 1){
                         onSwipeTop();
-                        return;
+                        //return;
                     }
                     if(segmentTracker == 0){
                         imageTracker = 0;
@@ -149,6 +149,10 @@ public class StoryFeedActivity extends AppCompatActivity  {
                         getData(storyIdCachePath);
                         storyEndFlag = 1;
                     }
+                }
+                if(numOfChildren < 5 && imageTracker == bm.size()){
+                    onSwipeTop();
+                    return;
                 }
                 if(imageTracker < bm.size()) {
                     Log.v(LOG_TAG, "story number " + Integer.toString(imageTracker));
@@ -259,6 +263,16 @@ public class StoryFeedActivity extends AppCompatActivity  {
             super.onPostExecute(aVoid);
             //passData(storyIdCachePath);
         }
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Intent backPressIntent = new Intent(StoryFeedActivity.this, MainActivity.class);
+        backPressIntent.putExtra("storyFeedIntentFlag", "storyFeedIntentFlag");
+        backPressIntent.putExtra("rtnStoryIdCachePath", storyIdCachePath);
+        backPressIntent.putExtra("rtnStoryId", storyId);
+        startActivity(backPressIntent);
     }
 
     @Override
