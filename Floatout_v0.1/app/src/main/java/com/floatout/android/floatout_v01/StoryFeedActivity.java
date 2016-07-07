@@ -17,7 +17,8 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.MutableData;
+import com.google.firebase.database.Transaction;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -34,7 +35,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
     private FirebaseAuth mAuth;
     private StorageReference storageRef;
 
-    private ArrayList<String> textViewStoryDesc = new ArrayList<>();
+    private ArrayList<String> storyFeedDescList = new ArrayList<>();
     private ArrayList<String> storyFeedList = new ArrayList<>();
 
     int current;
@@ -66,8 +67,8 @@ public class StoryFeedActivity extends AppCompatActivity  {
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random1));
         }
 
-
         storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
+        storyFeedDesc = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED_DESC);
         mAuth = FirebaseAuth.getInstance();
         storageRef = FirebaseStorage.getInstance().getReference();
 
@@ -75,22 +76,39 @@ public class StoryFeedActivity extends AppCompatActivity  {
         storyId = intent.getStringExtra("storyId");
 
         DatabaseReference storyFeedIdref = storyFeed.child(storyId);
-        storyFeedIdref.addValueEventListener(new ValueEventListener() {
+        final DatabaseReference storyFeedDescIdRef = storyFeedDesc.child(storyId);
+
+        storyFeedIdref.runTransaction(new Transaction.Handler() {
             @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
+            public Transaction.Result doTransaction(MutableData currentData) {
                 storyFeedList.clear();
-                numOfChildren = (int) dataSnapshot.getChildrenCount();
-                for(DataSnapshot data: dataSnapshot.getChildren()){
+                numOfChildren = (int) currentData.getChildrenCount();
+                for(MutableData data: currentData.getChildren()){
                     storyFeedList.add(data.getValue().toString());
                 }
-                getStory(0);
                 Log.v(LOG_TAG, "children count " + Integer.toString(numOfChildren));
+                return Transaction.success(currentData);
             }
+
             @Override
-            public void onCancelled(DatabaseError databaseError) {
+            public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+                storyFeedDescIdRef.runTransaction(new Transaction.Handler() {
+                    @Override
+                    public Transaction.Result doTransaction(MutableData currentData) {
+                        storyFeedDescList.clear();
+                        for(MutableData data: currentData.getChildren()){
+                            storyFeedDescList.add(data.getValue().toString());
+                        }
+                        return Transaction.success(currentData);
+                    }
+
+                    @Override
+                    public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot){
+                        getStory(0);
+                    }
+                });
             }
         });
-
         Log.v(LOG_TAG, storyId);
 
         storyImage.setOnTouchListener(new OnSwipeTouchListener(StoryFeedActivity.this) {
@@ -117,23 +135,21 @@ public class StoryFeedActivity extends AppCompatActivity  {
             public void onSwipeBottom() {
                 Toast.makeText(StoryFeedActivity.this, "bottom", Toast.LENGTH_SHORT).show();
             }
-
         });
     }
 
     private void getStory(int storyNumber){
-        if(storyNumber >= 0) {
+        if(storyNumber >= 0 && !storyFeedList.isEmpty()) {
             current = storyNumber;
-            if (!storyFeedList.isEmpty()) {
-                storageRef.child(storyId + "/" + storyFeedList.get(storyNumber)).getDownloadUrl()
-                        .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String url = uri.toString();
-                        Picasso.with(getApplicationContext()).load(url).into(storyImage);
-                    }
-                });
-            }
+            storyDesc.setText(storyFeedDescList.get(storyNumber));
+            storageRef.child(storyId + "/" + storyFeedList.get(storyNumber)).getDownloadUrl()
+                    .addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String url = uri.toString();
+                            Picasso.with(getApplicationContext()).load(url).into(storyImage);
+                        }
+                    });
         }
     }
 
