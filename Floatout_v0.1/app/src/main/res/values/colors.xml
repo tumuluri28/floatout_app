@@ -6,4 +6,7 @@
     <color name="white">#ffffff</color>
     <color name="black">#000000</color>
     <color name="iceberg">#a3bed3</color>
+    <color name="random1">#FF7B5F</color>
+    <color name="random2">#FFDB46</color>
+    <color name="random3"> #D2FF46</color>
 </resources>
