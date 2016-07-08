@@ -7,7 +7,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.floatout.android.floatout_v01.Gesture.OnSwipeTouchListener;
 import com.floatout.android.floatout_v01.utils.Constants;
@@ -55,15 +54,12 @@ public class StoryFeedActivity extends AppCompatActivity  {
         storyDesc = (TextView) findViewById(R.id.storyDesc);
         storyImage = (ImageView) findViewById(R.id.image);
         if(n==1) {
-            storyImage.setBackgroundColor(getResources().getColor(R.color.random1));
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random2));
         }
         if (n==2){
-            storyImage.setBackgroundColor(getResources().getColor(R.color.random2));
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random3));
         }
         if(n==3) {
-            storyImage.setBackgroundColor(getResources().getColor(R.color.random3));
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random1));
         }
 
@@ -113,27 +109,23 @@ public class StoryFeedActivity extends AppCompatActivity  {
 
         storyImage.setOnTouchListener(new OnSwipeTouchListener(StoryFeedActivity.this) {
             public void onSwipeTop() {
-                Toast.makeText(StoryFeedActivity.this, "top", Toast.LENGTH_SHORT).show();
-                Intent intent  = new Intent(StoryFeedActivity.this, MainActivity.class);
-                startActivity(intent);
+
             }
             public void onSwipeRight() {
-                Toast.makeText(StoryFeedActivity.this, "right", Toast.LENGTH_SHORT).show();
                 if(current == 0){
-                    onSwipeTop();
+                    onSwipeBottom();
                 }
                 getStory(current-1);
             }
             public void onSwipeLeft() {
-                Toast.makeText(StoryFeedActivity.this, "left", Toast.LENGTH_SHORT).show();
                 if(current == storyFeedList.size()-1){
-                    onSwipeTop();
+                    onSwipeBottom();
                 }
                 getStory(current+1);
-
             }
             public void onSwipeBottom() {
-                Toast.makeText(StoryFeedActivity.this, "bottom", Toast.LENGTH_SHORT).show();
+                Intent intent  = new Intent(StoryFeedActivity.this, MainActivity.class);
+                startActivity(intent);
             }
         });
     }

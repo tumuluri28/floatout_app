@@ -12,8 +12,8 @@ import android.view.TextureView;
  */
 public class AutoFitTextureView extends TextureView {
 
-    private int mRatioWidth = 0;
-    private int mRatioHeight = 0;
+    private int mRatioWidth;
+    private int mRatioHeight;
 
     public AutoFitTextureView(Context context) {
         this(context, null);
@@ -49,6 +49,8 @@ public class AutoFitTextureView extends TextureView {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
         int height = MeasureSpec.getSize(heightMeasureSpec);
+        //setMeasuredDimension(width,height);
+        //setMeasuredDimension(width, width * mRatioHeight / mRatioWidth);
         if (0 == mRatioWidth || 0 == mRatioHeight) {
             setMeasuredDimension(width, height);
         } else {

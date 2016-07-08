@@ -17,6 +17,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.firebase.ui.database.FirebaseListAdapter;
+import com.floatout.android.floatout_v01.Gesture.OnSwipeTouchListener;
 import com.floatout.android.floatout_v01.model.StorytagList;
 import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -73,6 +74,16 @@ public class CameraCaptureActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        im.setOnTouchListener(new OnSwipeTouchListener(CameraCaptureActivity.this) {
+            public void onSwipeRight() {
+                Intent cameraActivityIntent = new Intent(CameraCaptureActivity.this, CameraActivity.class);
+                cameraActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                cameraActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(cameraActivityIntent);
+
+            }
+        });
+
         description = (EditText) findViewById(R.id.description);
 
         add = (ImageButton) findViewById(R.id.add_story);
@@ -116,15 +127,6 @@ public class CameraCaptureActivity extends AppCompatActivity {
                 DatabaseReference newPostDescription = databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED_DESC)
                         .child(storageBucket).child(newPost.getKey());
                 newPostDescription.setValue(storyDescription);
-            }
-        });
-
-        clear = (ImageButton) findViewById(R.id.clear);
-        clear.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(CameraCaptureActivity.this, CameraActivity.class);
-                startActivity(intent);
             }
         });
     }

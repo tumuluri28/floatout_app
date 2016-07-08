@@ -18,14 +18,15 @@
                 android:id="@+id/image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_alignParentTop="true"/>
+                android:layout_alignParentTop="true"
+                android:background="@color/black"/>
 
         </RelativeLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="0.75"
+            android:layout_weight="1.25"
             android:orientation="horizontal"
             android:background="@color/white">
 
@@ -34,7 +35,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:textColor="@color/black"
-                android:textSize="18dp" />
+                android:gravity="left"
+                android:textSize="24dp" />
 
 
         </RelativeLayout>

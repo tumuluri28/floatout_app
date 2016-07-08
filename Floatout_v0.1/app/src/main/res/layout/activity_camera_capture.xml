@@ -17,19 +17,10 @@
 
             <ImageView
                 android:id="@+id/image"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
                 android:background="@color/black"
                 android:layout_alignParentTop="true"/>
-
-            <ImageButton
-                android:id="@+id/clear"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="5dp"
-                android:background="@android:drawable/ic_menu_close_clear_cancel" />
-
-
         </RelativeLayout>
 
         <EditText
