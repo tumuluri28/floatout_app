@@ -2,9 +2,19 @@ package com.floatout.android.floatout_v01;
 
 //import android.app.Fragment;
 
+import android.Manifest;
 import android.app.ProgressDialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.location.Address;
+import android.location.Geocoder;
+import android.location.Location;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -14,11 +24,15 @@ import android.widget.AdapterView;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.floatout.android.floatout_v01.login.LoginActivity;
 import com.floatout.android.floatout_v01.model.StorytagList;
 import com.floatout.android.floatout_v01.utils.Constants;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -29,13 +43,16 @@ import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 
 /**
  * Created by Yashwanth on 16-06-01.
  */
-public class MainActivity_Fragment extends Fragment {
+public class MainActivity_Fragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private ProgressDialog progressDialog;
 
@@ -52,6 +69,12 @@ public class MainActivity_Fragment extends Fragment {
 
     private ArrayList<String> storyNames = new ArrayList<>();
     private ArrayList<String> storyIds = new ArrayList<>();
+
+    private static final int REQUEST_ACCESS_FINE_LOCATION = 100;
+
+    protected GoogleApiClient googleApiClient;
+
+    protected Location location;
 
     boolean connected;
 
@@ -71,6 +94,12 @@ public class MainActivity_Fragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        googleApiClient = new GoogleApiClient.Builder(getActivity().getApplicationContext())
+                .addConnectionCallbacks(this)
+                .addOnConnectionFailedListener(this)
+                .addApi(LocationServices.API).build();
+
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser user = mAuth.getCurrentUser();
         uid = user.getUid();
@@ -106,6 +135,21 @@ public class MainActivity_Fragment extends Fragment {
                 System.err.println("Listener was cancelled");
             }
         });
+
+        getPermission();
+    }
+
+    private void getPermission() {
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions( new String[]{Manifest.permission.ACCESS_FINE_LOCATION},REQUEST_ACCESS_FINE_LOCATION);
+        }
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        googleApiClient.connect();
     }
 
     @Override
@@ -229,6 +273,89 @@ public class MainActivity_Fragment extends Fragment {
         super.onDestroy();
         if(mStorytagListAdapter != null) {
             mStorytagListAdapter.cleanup();
+        }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+        if(googleApiClient.isConnected()) {
+            googleApiClient.disconnect();
+        }
+    }
+
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION)
+                == PackageManager.PERMISSION_GRANTED) {
+            Double lat;
+            Double lon;
+            location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
+            if (location != null) {
+                new GetAddressTask().execute(location);
+                lat = location.getLatitude();
+                lon = location.getLongitude();
+                Log.v(LOG_TAG, "co-ords " + String.valueOf(lat));
+                Log.v(LOG_TAG, "co-ords 1" + String.valueOf(lon));
+                /*Toast.makeText(getActivity(), "this is my Toast message!!! =)",
+                        Toast.LENGTH_LONG).show();*/
+            }
+        }
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+        googleApiClient.connect();
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode,permissions,grantResults);
+        if (requestCode == REQUEST_ACCESS_FINE_LOCATION) {
+            if (grantResults[0] == PackageManager.PERMISSION_DENIED) {
+                Toast.makeText(getActivity(), "Please, please, please. Grant us permission", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    private class GetAddressTask extends AsyncTask<Location, Void, String>{
+        Context context;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Location... params) {
+            Geocoder geoCoder = new Geocoder(getActivity().getApplicationContext(), Locale.getDefault());
+            Location loc = params[0];
+            List<Address> addresses = null;
+
+            try{
+                addresses = geoCoder.getFromLocation(loc.getLatitude(), loc.getLongitude(),1);
+            }catch (IOException e1){
+                e1.printStackTrace();
+            }
+
+            if(addresses !=null && addresses.size()>0){
+               Log.v(LOG_TAG, addresses.get(0).getFeatureName() + ","+
+               addresses.get(0).getLocality() + ","
+               +addresses.get(0).getAdminArea() + "," +
+               addresses.get(0).getCountryName());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
         }
     }
 }

@@ -7,11 +7,11 @@
 
     tools:context="com.floatout.android.floatout_v01.CameraActivity">
 
-    <com.floatout.android.floatout_v01.AutoFitTextureView
+    <TextureView
         android:id="@+id/cameraview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentTop="true" />
+        android:layout_alignParentTop="true"/>
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -31,7 +31,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/ic_camera_black_48dp" />
+        android:background="@drawable/ic_camera_white_48dp" />
 
     <ImageButton
         android:layout_width="wrap_content"
@@ -41,7 +41,7 @@
         android:layout_alignParentLeft="true"
         android:layout_marginLeft="10dp"
         android:layout_marginBottom="20dp"
-        android:background="@drawable/ic_chevron_left_black_36dp" />
+        android:background="@drawable/ic_navigate_before_white_48dp" />
 
     <ImageButton
         android:layout_width="wrap_content"
