@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.floatout.android.floatout_v01.Gesture.OnSwipeTouchListener;
 import com.floatout.android.floatout_v01.utils.Constants;
@@ -28,14 +29,16 @@ import java.util.Random;
 public class StoryFeedActivity extends AppCompatActivity  {
 
     private ImageView storyImage;
-    private TextView storyDesc;
+    private TextView storyDesc,storyLocation;
 
-    private DatabaseReference storyFeed, storyFeedDesc;
+    private DatabaseReference storyFeed;
     private FirebaseAuth mAuth;
     private StorageReference storageRef;
 
     private ArrayList<String> storyFeedDescList = new ArrayList<>();
     private ArrayList<String> storyFeedList = new ArrayList<>();
+    private ArrayList<String> storyFeedLocationList = new ArrayList<>();
+
 
     int current;
     int numOfChildren;
@@ -52,19 +55,23 @@ public class StoryFeedActivity extends AppCompatActivity  {
         int  n = rand.nextInt(3) + 1;
 
         storyDesc = (TextView) findViewById(R.id.storyDesc);
+        storyLocation = (TextView) findViewById(R.id.storylocation);
+
         storyImage = (ImageView) findViewById(R.id.image);
         if(n==1) {
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random2));
+            storyLocation.setBackgroundColor(getResources().getColor(R.color.random2));
         }
         if (n==2){
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random3));
+            storyLocation.setBackgroundColor(getResources().getColor(R.color.random3));
         }
         if(n==3) {
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random1));
+            storyLocation.setBackgroundColor(getResources().getColor(R.color.random1));
         }
 
         storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
-        storyFeedDesc = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED_DESC);
         mAuth = FirebaseAuth.getInstance();
         storageRef = FirebaseStorage.getInstance().getReference();
 
@@ -72,15 +79,19 @@ public class StoryFeedActivity extends AppCompatActivity  {
         storyId = intent.getStringExtra("storyId");
 
         DatabaseReference storyFeedIdref = storyFeed.child(storyId);
-        final DatabaseReference storyFeedDescIdRef = storyFeedDesc.child(storyId);
 
         storyFeedIdref.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData currentData) {
-                storyFeedList.clear();
                 numOfChildren = (int) currentData.getChildrenCount();
-                for(MutableData data: currentData.getChildren()){
-                    storyFeedList.add(data.getValue().toString());
+                    for (MutableData data : currentData.getChildren()) {
+                        storyFeedList.add(data.child(Constants.FIREBASE_STORYFEED_URL)
+                                .getValue().toString());
+                        storyFeedDescList.add(data.child(Constants.FIREBASE_STORYFEED_DESCRIPTION)
+                                .getValue().toString());
+                        storyFeedLocationList.add(data.child(Constants.FIREBASE_STORYFEED_LOCATION)
+                        .getValue().toString());
+
                 }
                 Log.v(LOG_TAG, "children count " + Integer.toString(numOfChildren));
                 return Transaction.success(currentData);
@@ -88,21 +99,12 @@ public class StoryFeedActivity extends AppCompatActivity  {
 
             @Override
             public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-                storyFeedDescIdRef.runTransaction(new Transaction.Handler() {
-                    @Override
-                    public Transaction.Result doTransaction(MutableData currentData) {
-                        storyFeedDescList.clear();
-                        for(MutableData data: currentData.getChildren()){
-                            storyFeedDescList.add(data.getValue().toString());
-                        }
-                        return Transaction.success(currentData);
-                    }
-
-                    @Override
-                    public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot){
-                        getStory(0);
-                    }
-                });
+                if(numOfChildren == 0){
+                    Toast.makeText(StoryFeedActivity.this, "There's no story yo!, why don't you add?", Toast.LENGTH_LONG).show();
+                    getBackToMainActivity();
+                }else{
+                    getStory(0);
+                }
             }
         });
         Log.v(LOG_TAG, storyId);
@@ -124,8 +126,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
                 getStory(current+1);
             }
             public void onSwipeBottom() {
-                Intent intent  = new Intent(StoryFeedActivity.this, MainActivity.class);
-                startActivity(intent);
+                getBackToMainActivity();
             }
         });
     }
@@ -133,7 +134,8 @@ public class StoryFeedActivity extends AppCompatActivity  {
     private void getStory(int storyNumber){
         if(storyNumber >= 0 && !storyFeedList.isEmpty()) {
             current = storyNumber;
-            storyDesc.setText(storyFeedDescList.get(storyNumber));
+            if(!storyFeedDescList.isEmpty()) storyDesc.setText(storyFeedDescList.get(storyNumber));
+            if(!storyFeedLocationList.isEmpty())storyLocation.setText(storyFeedLocationList.get(storyNumber));
             storageRef.child(storyId + "/" + storyFeedList.get(storyNumber)).getDownloadUrl()
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -158,5 +160,12 @@ public class StoryFeedActivity extends AppCompatActivity  {
     @Override
     protected void onStop() {
         super.onStop();
+    }
+
+    private void getBackToMainActivity() {
+        Intent intent = new Intent(StoryFeedActivity.this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
     }
 }

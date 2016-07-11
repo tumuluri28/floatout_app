@@ -41,8 +41,8 @@
         </activity>
         <activity android:name=".CameraActivity" />
         <activity android:name=".CameraCaptureActivity" />
-        <activity android:name=".StoryFeedActivity"></activity>
-
+        <activity android:name=".StoryFeedActivity" />
+        <activity android:name=".AccountManagement"></activity>
     </application>
 
 </manifest>

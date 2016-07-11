@@ -27,7 +27,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseListAdapter;
-import com.floatout.android.floatout_v01.login.LoginActivity;
 import com.floatout.android.floatout_v01.model.StorytagList;
 import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.android.gms.common.ConnectionResult;
@@ -79,6 +78,7 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
     boolean connected;
 
     private String uid;
+    private String strLocation;
     private final String LOG_TAG = MainActivity_Fragment.class.getSimpleName();
 
     public MainActivity_Fragment() {
@@ -241,8 +241,7 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
         menu_Button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                mAuth.getInstance().signOut();
-                Intent intent = new Intent(getActivity(), LoginActivity.class);
+                Intent intent = new Intent(getActivity(), AccountManagement.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
                 startActivity(intent);
@@ -295,8 +294,8 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
                 new GetAddressTask().execute(location);
                 lat = location.getLatitude();
                 lon = location.getLongitude();
-                Log.v(LOG_TAG, "co-ords " + String.valueOf(lat));
-                Log.v(LOG_TAG, "co-ords 1" + String.valueOf(lon));
+                Log.v(LOG_TAG, "co-ords lat " + String.valueOf(lat));
+                Log.v(LOG_TAG, "co-ords lon " + String.valueOf(lon));
                 /*Toast.makeText(getActivity(), "this is my Toast message!!! =)",
                         Toast.LENGTH_LONG).show();*/
             }
@@ -345,17 +344,26 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
             }
 
             if(addresses !=null && addresses.size()>0){
-               Log.v(LOG_TAG, addresses.get(0).getFeatureName() + ","+
-               addresses.get(0).getLocality() + ","
-               +addresses.get(0).getAdminArea() + "," +
-               addresses.get(0).getCountryName());
+                if(addresses.get(0).getFeatureName() == null) {
+                    strLocation = addresses.get(0).getSubLocality()+","+
+                            addresses.get(0).getLocality() + "," +
+                            addresses.get(0).getAdminArea() + "," +
+                            addresses.get(0).getCountryName();
+                }else {
+                    strLocation = addresses.get(0).getFeatureName()+","+
+                            addresses.get(0).getSubLocality()+","+
+                            addresses.get(0).getLocality() + "," +
+                            addresses.get(0).getAdminArea() + "," +
+                            addresses.get(0).getCountryName();
+                }
             }
-            return null;
+            return strLocation;
         }
 
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
+            Log.v(LOG_TAG, s);
         }
     }
 }

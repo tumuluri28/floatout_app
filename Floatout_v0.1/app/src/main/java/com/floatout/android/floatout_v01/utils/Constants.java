@@ -16,7 +16,10 @@ public final class Constants {
     public static final String FIREBASE_LOCATION_USERS = "users";
 
     public static final String FIREBASE_LOCATION_STORYFEED = "storyFeed";
-    public static final String FIREBASE_LOCATION_STORYFEED_DESC = "storyFeedDesc";
+    public static final String FIREBASE_STORYFEED_URL = "url";
+    public static final String FIREBASE_STORYFEED_DESCRIPTION = "description";
+    public static final String FIREBASE_STORYFEED_USERID = "userid";
+    public static final String FIREBASE_STORYFEED_LOCATION = "location";
 
     public static final String FIREBASE_USERS_STORYTAGSTATS = "users";
     public static final String FIREBASE_LOCATION_USER_VIEWS_STORYTAGSTATS = "views";

@@ -38,6 +38,14 @@
                 android:gravity="left"
                 android:textSize="24dp" />
 
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceSmall"
+                android:id="@+id/storylocation"
+                android:layout_alignParentBottom="true"
+                android:layout_alignParentEnd="true" />
+
 
         </RelativeLayout>
     </LinearLayout>
