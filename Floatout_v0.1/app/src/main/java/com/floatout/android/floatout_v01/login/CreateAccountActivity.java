@@ -12,6 +12,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.floatout.android.floatout_v01.MainActivity;
 import com.floatout.android.floatout_v01.R;
@@ -84,8 +85,15 @@ public class CreateAccountActivity extends AppCompatActivity {
                     public void onComplete(@NonNull Task<AuthResult> task) {
                         Log.d(LOG_TAG, "successful");
                         FirebaseUser user = mAuth.getCurrentUser();
-                        String uid = user.getUid();
-                        createUserInFirebaseDatabase(uid);
+                        if(user != null) {
+                            String uid = user.getUid();
+                            createUserInFirebaseDatabase(uid);
+                            Toast.makeText(CreateAccountActivity.this, "Account Created!", Toast.LENGTH_SHORT)
+                                    .show();
+                        }else{
+                            Toast.makeText(CreateAccountActivity.this, "Email ID exists. Try Login!", Toast.LENGTH_SHORT)
+                                    .show();
+                        }
 
                     }
                 });

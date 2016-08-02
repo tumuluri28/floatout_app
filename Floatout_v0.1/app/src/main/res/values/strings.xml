@@ -15,7 +15,7 @@
 
     <string name="no_account_text">No account?</string>
 
-    <string name="button_create_account">Create One</string>
+    <string name="button_create_account">Create Account</string>
     <string name="title_activity_login">Login</string>
 
     <string name="error_cannot_be_empty">Cannot be empty</string>

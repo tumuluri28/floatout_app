@@ -363,7 +363,7 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
         @Override
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
-            Log.v(LOG_TAG, s);
+            ;
         }
     }
 }

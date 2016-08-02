@@ -4,49 +4,43 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <LinearLayout
-        android:orientation="vertical"
+    <ImageButton
+        android:id="@+id/menu_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:background="@drawable/header_logo"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignParentTop="true"
+        android:layout_centerHorizontal="true" />
+
+    <ListView
+        android:id="@+id/storytag_list"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:divider="@color/listviewdivider"
+        android:layout_gravity="center_horizontal"
+        android:dividerHeight="1dp"
+        android:layout_below="@+id/menu_button"
+        android:layout_alignParentStart="true"
+        android:fastScrollEnabled="false"
+        android:focusable="false"
+        android:stackFromBottom="false"
+        android:smoothScrollbar="true"
+        android:fastScrollAlwaysVisible="false" />
 
-        <ListView
-            android:id="@+id/storytag_list"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="9"
-            android:divider="@android:color/black"
-            android:scrollbars="none"
-            android:layout_gravity="center_horizontal"
-            android:dividerHeight="2dp" />
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1"
-            android:orientation="horizontal"
-            android:weightSum="1">
-
-            <ImageButton
-                android:id="@+id/menu_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/ic_menu_black_36dp"
-                android:layout_alignParentLeft="true"
-                android:layout_alignParentBottom="true"
-                android:foregroundGravity="center"
-                android:layout_alignTop="@+id/camera_button" />
-
-            <ImageButton
-                android:id="@+id/camera_button"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="false"
-                android:layout_centerHorizontal="true"
-                android:layout_alignParentBottom="true"
-                android:background="@drawable/ic_linked_camera_black_48dp" />
-
-
-        </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     </LinearLayout>
+
+    <ImageButton
+        android:id="@+id/camera_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/button_small"
+        android:layout_gravity="center_horizontal"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true" />
 </RelativeLayout>

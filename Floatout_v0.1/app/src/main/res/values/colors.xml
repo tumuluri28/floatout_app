@@ -9,4 +9,6 @@
     <color name="random1">#5A13EA</color>
     <color name="random2">#F5D805</color>
     <color name="random3">#04A4FF</color>
+    <color name="storytagtext">#484848</color>
+    <color name="listviewdivider">#F2F2F2</color>
 </resources>

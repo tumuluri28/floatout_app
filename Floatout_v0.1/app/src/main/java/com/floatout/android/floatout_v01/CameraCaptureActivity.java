@@ -25,6 +25,7 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.firebase.ui.database.FirebaseListAdapter;
 import com.floatout.android.floatout_v01.Gesture.OnSwipeTouchListener;
@@ -153,6 +154,7 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
 
                 getBackToMainActivity();
 
+
                 uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                     @Override
                     public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
@@ -210,6 +212,9 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
     }
 
     private void getBackToMainActivity() {
+        Toast.makeText(CameraCaptureActivity.this, "Story Added!", Toast.LENGTH_SHORT)
+                .show();
+
         Intent mainActivityIntent = new Intent(CameraCaptureActivity.this, MainActivity.class);
         mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

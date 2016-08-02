@@ -95,12 +95,13 @@ public class CameraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_camera);
 
-        final Drawable bolt = getDrawable(R.drawable.bolt);
-        final Drawable boltHollow = getDrawable(R.drawable.bolt_hollow);
+        final Drawable bolt = getDrawable(R.drawable.flash_active);
+        final Drawable boltHollow = getDrawable(R.drawable.flast_inactive);
 
         textureView = (TextureView) findViewById(R.id.cameraview);
         assert textureView != null;
         textureView.setSurfaceTextureListener(textureListener);
+
         takePictureButton = (ImageButton) findViewById(R.id.btn_picture);
         assert takePictureButton != null;
         takePictureButton.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +110,7 @@ public class CameraActivity extends AppCompatActivity {
                 takePicture();
             }
         });
+
         backButton = (ImageButton) findViewById(R.id.btn_back);
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -116,8 +118,8 @@ public class CameraActivity extends AppCompatActivity {
                 backToMainActivity();
             }
         });
+
         flashButton = (ImageButton) findViewById(R.id.flashbutton);
-        flashButton.setBackground(boltHollow);
         flashButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -272,6 +274,9 @@ public class CameraActivity extends AppCompatActivity {
                     } finally {
                         if (image != null) {
                             image.close();
+                            Intent intent = new Intent(CameraActivity.this, CameraCaptureActivity.class);
+                            intent.putExtra("path",path);
+                            startActivity(intent);
                         }
                     }
                 }
@@ -319,9 +324,6 @@ public class CameraActivity extends AppCompatActivity {
                 public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
                     super.onCaptureCompleted(session, request, result);
                     captureBuilder.set(CaptureRequest.FLASH_MODE, CameraMetadata.FLASH_MODE_OFF);
-                    Intent intent = new Intent(CameraActivity.this, CameraCaptureActivity.class);
-                    intent.putExtra("path",path);
-                    startActivity(intent);
                     //Toast.makeText(FullscreenActivity.this, "Saved:" + mypath , Toast.LENGTH_SHORT).show();
                     //createCameraPreview();
                 }

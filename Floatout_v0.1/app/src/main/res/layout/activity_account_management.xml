@@ -14,16 +14,24 @@
         android:layout_height="wrap_content"
         android:text="Log out"
         android:id="@+id/logoutbutton"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="236dp" />
+        android:layout_marginTop="143dp"
+        android:layout_below="@+id/goback"
+        android:layout_alignStart="@+id/goback" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Goback->"
         android:id="@+id/goback"
-        android:layout_alignBottom="@+id/logoutbutton"
-        android:layout_alignStart="@+id/logoutbutton"
-        android:layout_marginBottom="54dp" />
+        android:layout_alignParentTop="true"
+        android:layout_alignParentEnd="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Update Password"
+        android:id="@+id/updatepassword"
+        android:layout_alignTop="@+id/logoutbutton"
+        android:layout_alignParentStart="true" />
+
 </RelativeLayout>

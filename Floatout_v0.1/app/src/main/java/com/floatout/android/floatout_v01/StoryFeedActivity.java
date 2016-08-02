@@ -1,11 +1,16 @@
 package com.floatout.android.floatout_v01;
 
+import android.app.Dialog;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.View;
+import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -13,12 +18,14 @@ import com.floatout.android.floatout_v01.Gesture.OnSwipeTouchListener;
 import com.floatout.android.floatout_v01.utils.Constants;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.MutableData;
 import com.google.firebase.database.Transaction;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.squareup.picasso.Picasso;
@@ -26,25 +33,32 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.Random;
 
-public class StoryFeedActivity extends AppCompatActivity  {
+public class StoryFeedActivity extends AppCompatActivity{
 
+    private RelativeLayout storyDescLayout;
     private ImageView storyImage;
+    private ImageButton storyLike,storyLocationButton;
     private TextView storyDesc,storyLocation;
 
     private DatabaseReference storyFeed;
+    private DatabaseReference storyFeedIdref;
     private FirebaseAuth mAuth;
     private StorageReference storageRef;
 
     private ArrayList<String> storyFeedDescList = new ArrayList<>();
     private ArrayList<String> storyFeedList = new ArrayList<>();
+    private ArrayList<String> storyFeedKeys = new ArrayList<>();
     private ArrayList<String> storyFeedLocationList = new ArrayList<>();
-
 
     int current;
     int numOfChildren;
+    int likeFlag;
 
     String storyId;
+    String currentKey;
     String LOG_TAG = StoryFeedActivity.class.getSimpleName();
+
+    Dialog locationDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,21 +68,27 @@ public class StoryFeedActivity extends AppCompatActivity  {
         Random rand = new Random();
         int  n = rand.nextInt(3) + 1;
 
+        storyDescLayout = (RelativeLayout) findViewById(R.id.storydesclayout);
         storyDesc = (TextView) findViewById(R.id.storyDesc);
-        storyLocation = (TextView) findViewById(R.id.storylocation);
+        //storyLocation = (TextView) findViewById(R.id.storylocation);
+        storyLike = (ImageButton) findViewById(R.id.storylike);
+        storyLocationButton = (ImageButton) findViewById(R.id.storylocationbutton);
 
         storyImage = (ImageView) findViewById(R.id.image);
         if(n==1) {
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random2));
-            storyLocation.setBackgroundColor(getResources().getColor(R.color.random2));
+            //storyLocation.setBackgroundColor(getResources().getColor(R.color.random2));
+            storyDescLayout.setBackgroundColor(getResources().getColor(R.color.random2));
         }
         if (n==2){
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random3));
-            storyLocation.setBackgroundColor(getResources().getColor(R.color.random3));
+            //storyLocation.setBackgroundColor(getResources().getColor(R.color.random3));
+            storyDescLayout.setBackgroundColor(getResources().getColor(R.color.random3));
         }
         if(n==3) {
             storyDesc.setBackgroundColor(getResources().getColor(R.color.random1));
-            storyLocation.setBackgroundColor(getResources().getColor(R.color.random1));
+            //storyLocation.setBackgroundColor(getResources().getColor(R.color.random1));
+            storyDescLayout.setBackgroundColor(getResources().getColor(R.color.random1));
         }
 
         storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
@@ -78,13 +98,14 @@ public class StoryFeedActivity extends AppCompatActivity  {
         Intent intent = getIntent();
         storyId = intent.getStringExtra("storyId");
 
-        DatabaseReference storyFeedIdref = storyFeed.child(storyId);
+        storyFeedIdref = storyFeed.child(storyId);
 
         storyFeedIdref.runTransaction(new Transaction.Handler() {
             @Override
             public Transaction.Result doTransaction(MutableData currentData) {
                 numOfChildren = (int) currentData.getChildrenCount();
                     for (MutableData data : currentData.getChildren()) {
+                        storyFeedKeys.add(data.getKey());
                         storyFeedList.add(data.child(Constants.FIREBASE_STORYFEED_URL)
                                 .getValue().toString());
                         storyFeedDescList.add(data.child(Constants.FIREBASE_STORYFEED_DESCRIPTION)
@@ -93,7 +114,6 @@ public class StoryFeedActivity extends AppCompatActivity  {
                         .getValue().toString());
 
                 }
-                Log.v(LOG_TAG, "children count " + Integer.toString(numOfChildren));
                 return Transaction.success(currentData);
             }
 
@@ -103,6 +123,7 @@ public class StoryFeedActivity extends AppCompatActivity  {
                     Toast.makeText(StoryFeedActivity.this, "There's no story yo!, why don't you add?", Toast.LENGTH_LONG).show();
                     getBackToMainActivity();
                 }else{
+                    Log.v(LOG_TAG, "keys " + storyFeedKeys.toString());
                     getStory(0);
                 }
             }
@@ -111,7 +132,11 @@ public class StoryFeedActivity extends AppCompatActivity  {
 
         storyImage.setOnTouchListener(new OnSwipeTouchListener(StoryFeedActivity.this) {
             public void onSwipeTop() {
-
+                if(likeFlag == 0) {
+                    storyLike.setBackgroundResource(R.drawable.like);
+                    new BackgroundLikeTask().execute(currentKey);
+                    likeFlag = 1;
+                }
             }
             public void onSwipeRight() {
                 if(current == 0){
@@ -129,13 +154,77 @@ public class StoryFeedActivity extends AppCompatActivity  {
                 getBackToMainActivity();
             }
         });
+
+        storyImage.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locationDialog.dismiss();
+            }
+        });
+
+        storyLike.setBackgroundResource(R.drawable.like_24px);
+        storyLike.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /*if(likeFlag == 0) {
+                    storyLike.setBackgroundResource(R.drawable.like);
+                    new BackgroundLikeTask().execute(currentKey);
+                    likeFlag = 1;
+                }else {
+                    storyLike.setBackgroundResource(R.drawable.like_24px);
+                    new BackgroundUnlikeTask().execute(currentKey);
+                    likeFlag = 0;
+                }*/
+            }
+        });
+
+        storyLocationButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                locationDialog = new Dialog(StoryFeedActivity.this);
+                locationDialog.setContentView(R.layout.location_popupdialog);
+                locationDialog.setTitle("Saw this @");
+
+                TextView storyLocation = (TextView) locationDialog.findViewById(R.id.storylocation);
+                if(!storyFeedLocationList.isEmpty())storyLocation.setText(storyFeedLocationList.get(current));
+                locationDialog.show();
+            }
+        });
+
     }
 
     private void getStory(int storyNumber){
         if(storyNumber >= 0 && !storyFeedList.isEmpty()) {
+            storyLike.setBackgroundResource(R.drawable.like_24px);
+            currentKey = storyFeedKeys.get(storyNumber);
+            FirebaseUser user = mAuth.getCurrentUser();
+            final String uid = user.getUid();
+            final DatabaseReference usersLikesRef = storyFeedIdref.child(currentKey)
+                    .child("likes").child("users");
+            usersLikesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if(dataSnapshot.getChildrenCount() > 0){
+                        if (dataSnapshot.child(uid).getValue() != null) {
+                            likeFlag = 1;
+                            storyLike.setBackgroundResource(R.drawable.like);
+                        } else {
+                            likeFlag = 0;
+                            storyLike.setBackgroundResource(R.drawable.like_24px);
+                        }
+                    }else{
+                        likeFlag = 0;
+                    }
+                }
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+            Log.v(LOG_TAG, "current key " + currentKey);
             current = storyNumber;
             if(!storyFeedDescList.isEmpty()) storyDesc.setText(storyFeedDescList.get(storyNumber));
-            if(!storyFeedLocationList.isEmpty())storyLocation.setText(storyFeedLocationList.get(storyNumber));
+            //if(!storyFeedLocationList.isEmpty())storyLocation.setText(storyFeedLocationList.get(storyNumber));
             storageRef.child(storyId + "/" + storyFeedList.get(storyNumber)).getDownloadUrl()
                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                         @Override
@@ -167,5 +256,65 @@ public class StoryFeedActivity extends AppCompatActivity  {
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
+    }
+
+    private class BackgroundLikeTask extends AsyncTask<String,Void,Void>{
+        @Override
+        protected Void doInBackground(String... params) {
+            FirebaseUser user = mAuth.getCurrentUser();
+            String uid = user.getUid();
+            String currentStoryKey = params[0];
+            final DatabaseReference likesCountRef = storyFeedIdref.child(currentStoryKey)
+                    .child("likes").child("likesCount");
+            likesCountRef.runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData currentData) {
+                    if(currentData.getValue() == null){
+                        currentData.setValue(1);
+                    }else{
+                        currentData.setValue((long) currentData.getValue()+1);
+                    }
+                    return Transaction.success(currentData);
+                }
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+
+                }
+            });
+
+            storyFeedIdref.child(currentStoryKey).child("likes").child("users")
+                    .child(uid).setValue("true");
+
+            return null;
+        }
+    }
+
+    private class BackgroundUnlikeTask extends AsyncTask<String,Void,Void>{
+        @Override
+        protected Void doInBackground(String... params) {
+            FirebaseUser user = mAuth.getCurrentUser();
+            String uid = user.getUid();
+            String currentStoryKey = params[0];
+            final DatabaseReference likesCountRef = storyFeedIdref.child(currentStoryKey)
+                    .child("likes").child("likesCount");
+            likesCountRef.runTransaction(new Transaction.Handler() {
+                @Override
+                public Transaction.Result doTransaction(MutableData currentData) {
+                    if((long) currentData.getValue() > 0){
+                        currentData.setValue((long) currentData.getValue()- 1);
+                    }
+                    return Transaction.success(currentData);
+                }
+                @Override
+                public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
+
+                }
+            });
+            final DatabaseReference usersLikesRef = storyFeedIdref.child(currentStoryKey)
+                    .child("likes").child("users");
+            usersLikesRef.child(uid).setValue(null);
+
+            return null;
+        }
     }
 }
