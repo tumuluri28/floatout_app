@@ -13,7 +13,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="7">
+            android:layout_weight="12">
 
             <ImageView
                 android:id="@+id/image"
@@ -22,41 +22,49 @@
                 android:background="@color/black"
                 android:layout_alignParentTop="true"/>
 
-
-        </RelativeLayout>
-
-        <EditText
-            android:id="@+id/description"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:cursorVisible="true"
-            android:textColor="@color/black"
-            android:imeOptions="actionDone"
-            android:singleLine="true"
-            android:maxLength="42"
-            android:hint="Add story description"
-            android:textCursorDrawable="@color/white"/>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="0.75"
-            android:orientation="horizontal"
-            android:background="@color/white">
-
-            <Spinner
-                android:id="@+id/camera_storytag_list"
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentStart="true"/>
+                android:id="@+id/backtomain"
+                android:layout_alignParentTop="true"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/return_from_camera" />
+
+            <ListView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/camera_storytag_list"
+                android:layout_below="@+id/backtomain"
+                android:layout_centerHorizontal="true"
+                android:divider="@color/listviewdivider"
+                android:dividerHeight="1dp"
+                android:layout_marginTop="73dp"/>
+
+            <EditText
+                android:id="@+id/description"
+                android:background="@color/white"
+                android:layout_width="match_parent"
+                android:layout_height="35dp"
+                android:cursorVisible="true"
+                android:textColor="@color/storytagtext"
+                android:imeOptions="actionDone"
+                android:singleLine="true"
+                android:maxLength="42"
+                android:hint="Story description"
+                android:textCursorDrawable="@color/white"
+                android:layout_below="@+id/backtomain"
+                android:layout_alignParentStart="true"
+                android:layout_marginTop="32dp" />
 
             <ImageButton
-                android:id="@+id/add_story"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_add_black_36dp"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true" />
+                android:id="@+id/add_story"
+                android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
+                android:background="@drawable/add_story" />
+
 
         </RelativeLayout>
     </LinearLayout>

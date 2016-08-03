@@ -274,8 +274,12 @@ public class CameraActivity extends AppCompatActivity {
                     } finally {
                         if (image != null) {
                             image.close();
+                            int wid = textureView.getWidth();
+                            int hei = textureView.getHeight();
                             Intent intent = new Intent(CameraActivity.this, CameraCaptureActivity.class);
                             intent.putExtra("path",path);
+                            intent.putExtra("width", wid);
+                            intent.putExtra("height",hei);
                             startActivity(intent);
                         }
                     }

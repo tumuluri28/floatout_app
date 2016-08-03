@@ -12,32 +12,31 @@
 
         <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="7">
+            android:layout_height="match_parent">
+
+            <TextureView
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/screensize"/>
+
 
             <ImageView
                 android:id="@+id/image"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_alignParentTop="true"
-                android:background="@color/black"/>
-
-        </RelativeLayout>
-
-        <RelativeLayout
-            android:id="@+id/storydesclayout"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1.25"
-            android:orientation="horizontal">
+                android:background="#95424242"/>
 
             <TextView
                 android:id="@+id/storyDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:textColor="@color/black"
-                android:layout_marginLeft="5dp"
-                android:textSize="24dp" />
+                android:background="#66424242"
+                android:textSize="24dp"
+                android:layout_above="@+id/storylocationbutton"
+                android:layout_alignParentEnd="true"
+                android:layout_marginBottom="46dp" />
 
             <ImageButton
                 android:id="@+id/storylike"
@@ -54,7 +53,7 @@
                 android:layout_margin="5dp"
                 android:layout_alignParentBottom="true"
                 android:layout_alignEnd="@+id/storyDesc"
-                android:background="@drawable/ic_place_black_36dp" />
+                android:background="@drawable/location" />
 
         </RelativeLayout>
     </LinearLayout>

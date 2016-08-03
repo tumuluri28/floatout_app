@@ -10,5 +10,4 @@
         android:id="@+id/storylocation"
         android:textColor="@color/black"
         android:textSize="16dp"/>
-    <requestFocus />
 </LinearLayout>

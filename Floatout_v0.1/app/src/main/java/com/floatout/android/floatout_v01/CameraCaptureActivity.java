@@ -20,10 +20,11 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.util.Size;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.Spinner;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -52,7 +53,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class CameraCaptureActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks
-, GoogleApiClient.OnConnectionFailedListener {
+        , GoogleApiClient.OnConnectionFailedListener {
 
     protected GoogleApiClient googleApiClient;
 
@@ -63,12 +64,12 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
     String strLocation;
     File f;
     private Size imageDimension;
-    ImageButton add,clear;
+    ImageButton add,backtoMain,showStorytags;
     EditText description;
     Bitmap bm;
     int i;
     String storageBucket;
-    private Spinner mCamera_Storytag_List;
+    private ListView mCamera_Storytag_List;
     private FirebaseListAdapter mStorytagListAdapter;
     private DatabaseReference ref, usersRef,databaseRef;
     private FirebaseAuth mAuth;
@@ -100,11 +101,14 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
 
         Intent intent = getIntent();
         path = intent.getStringExtra("path");
+        int width = intent.getIntExtra("width", 720);
+        int height = intent.getIntExtra("height",1280);
 
         try{
             f = new File(path, "image.jpg");
             bm = BitmapFactory.decodeStream(new FileInputStream(f));
-            im.setImageBitmap(bm);
+            Bitmap scaled = Bitmap.createScaledBitmap(bm,width,height,true);
+            im.setImageBitmap(scaled);
         }catch (FileNotFoundException e){
             e.printStackTrace();
         }
@@ -113,54 +117,28 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
             public void onSwipeRight() {
                 getBackToCameraActivity();
             }
+
+            @Override
+            public void onSwipeTop() {
+                super.onSwipeTop();
+                mCamera_Storytag_List.setVisibility(View.VISIBLE);
+                description.setVisibility(View.VISIBLE);
+            }
         });
 
+
         description = (EditText) findViewById(R.id.description);
+        description.setVisibility(View.INVISIBLE);
 
         add = (ImageButton) findViewById(R.id.add_story);
-        add.setOnClickListener(new View.OnClickListener() {
+        add.setVisibility(View.INVISIBLE);
+
+
+        backtoMain = (ImageButton) findViewById(R.id.backtomain);
+        backtoMain.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                TextView storyTag = (TextView) findViewById(R.id.camera_storytag_data);
-                String selected = storyTag.getText().toString();
-                storageRef = fStorage.getInstance().getReference();
-                FirebaseUser user = mAuth.getCurrentUser();
-                String userEmail = user.getEmail();
-                int index = 0;
-                for (String stories: storyNames){
-                    if(stories == selected){
-                        index = storyNames.indexOf(selected);
-                        if(index == 0) {
-                            storageBucket = Integer.toString(index+1);
-                        } else {
-                            storageBucket = Integer.toString(index);
-                        }
-                    }
-                }
-                Uri file = Uri.fromFile(f);
-
-                String storyDescription = description.getText().toString();
-
-                DatabaseReference newPost = databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED)
-                        .child(storageBucket).push();
-                newPost.child(Constants.FIREBASE_STORYFEED_URL)
-                        .setValue(userEmail+newPost.getKey()+file.getLastPathSegment());
-                newPost.child(Constants.FIREBASE_STORYFEED_USERID).setValue(uid);
-                newPost.child(Constants.FIREBASE_STORYFEED_DESCRIPTION).setValue(storyDescription);
-                newPost.child(Constants.FIREBASE_STORYFEED_LOCATION).setValue(strLocation);
-
-                StorageReference storyIdBucket = storageRef.child(storageBucket+"/"+userEmail+newPost.getKey()+file.getLastPathSegment());
-                UploadTask uploadTask = storyIdBucket.putFile(file);
-
                 getBackToMainActivity();
-
-
-                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                    @Override
-                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                        f.delete();
-                    }
-                });
             }
         });
     }
@@ -191,7 +169,8 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
     }
 
     private void initializeScreen() {
-        mCamera_Storytag_List = (Spinner) findViewById(R.id.camera_storytag_list);
+        mCamera_Storytag_List = (ListView) findViewById(R.id.camera_storytag_list);
+        mCamera_Storytag_List.setVisibility(View.INVISIBLE);
         mStorytagListAdapter = new FirebaseListAdapter<StorytagList>(CameraCaptureActivity.this, StorytagList.class, R.layout.camera_list_item_storytag, ref) {
             @Override
             protected void populateView(View view, StorytagList model, int position) {
@@ -201,7 +180,67 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
             }
         };
         mCamera_Storytag_List.setAdapter(mStorytagListAdapter);
+        storySelectionListener();
         //Log.v(LOG_TAG, Integer.toString(mCamera_Storytag_List.getChildCount()));
+    }
+
+    private void storySelectionListener() {
+        mCamera_Storytag_List.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                add.setVisibility(View.VISIBLE);
+                String selected = ((TextView) view.findViewById(R.id.camera_storytag_data)).getText().toString();
+                int index;
+                for (String story : storyNames) {
+                    if (selected == story) {
+                        index = storyNames.indexOf(selected);
+                        mCamera_Storytag_List.getItemAtPosition(index);
+                        view.findViewById(R.id.camera_storytag_data).setBackgroundColor(getResources().getColor(R.color.random3));
+                        storageBucket = Integer.toString(index+1);
+                        addStory();
+                    }
+                }
+            }
+        });
+    }
+
+    private void addStory(){
+        add.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                storageRef = fStorage.getInstance().getReference();
+                FirebaseUser user = mAuth.getCurrentUser();
+                String userEmail = user.getEmail();
+
+                Uri file = Uri.fromFile(f);
+
+                String storyDescription = description.getText().toString();
+
+                DatabaseReference newPost = databaseRef.child(Constants.FIREBASE_LOCATION_STORYFEED)
+                        .child(storageBucket).push();
+                newPost.child(Constants.FIREBASE_STORYFEED_URL)
+                        .setValue(userEmail+newPost.getKey()+file.getLastPathSegment());
+                newPost.child(Constants.FIREBASE_STORYFEED_USERID).setValue(uid);
+                newPost.child(Constants.FIREBASE_STORYFEED_DESCRIPTION).setValue(storyDescription);
+                newPost.child(Constants.FIREBASE_STORYFEED_LOCATION).setValue(strLocation);
+
+                StorageReference storyIdBucket = storageRef.child(storageBucket+"/"+userEmail+newPost.getKey()+file.getLastPathSegment());
+                UploadTask uploadTask = storyIdBucket.putFile(file);
+
+                Toast.makeText(CameraCaptureActivity.this, "Story Added!", Toast.LENGTH_SHORT)
+                        .show();
+
+                getBackToMainActivity();
+
+
+                uploadTask.addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        f.delete();
+                    }
+                });
+            }
+        });
     }
 
     private void getBackToCameraActivity() {
@@ -212,9 +251,6 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
     }
 
     private void getBackToMainActivity() {
-        Toast.makeText(CameraCaptureActivity.this, "Story Added!", Toast.LENGTH_SHORT)
-                .show();
-
         Intent mainActivityIntent = new Intent(CameraCaptureActivity.this, MainActivity.class);
         mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         mainActivityIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK);

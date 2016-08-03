@@ -2,11 +2,13 @@ package com.floatout.android.floatout_v01;
 
 import android.app.Dialog;
 import android.content.Intent;
+import android.graphics.SurfaceTexture;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -53,12 +55,16 @@ public class StoryFeedActivity extends AppCompatActivity{
     int current;
     int numOfChildren;
     int likeFlag;
+    int screenWidth;
+    int screenHeight;
 
     String storyId;
     String currentKey;
     String LOG_TAG = StoryFeedActivity.class.getSimpleName();
 
     Dialog locationDialog;
+
+    private TextureView textureView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -68,28 +74,17 @@ public class StoryFeedActivity extends AppCompatActivity{
         Random rand = new Random();
         int  n = rand.nextInt(3) + 1;
 
-        storyDescLayout = (RelativeLayout) findViewById(R.id.storydesclayout);
+
         storyDesc = (TextView) findViewById(R.id.storyDesc);
         //storyLocation = (TextView) findViewById(R.id.storylocation);
         storyLike = (ImageButton) findViewById(R.id.storylike);
         storyLocationButton = (ImageButton) findViewById(R.id.storylocationbutton);
 
         storyImage = (ImageView) findViewById(R.id.image);
-        if(n==1) {
-            storyDesc.setBackgroundColor(getResources().getColor(R.color.random2));
-            //storyLocation.setBackgroundColor(getResources().getColor(R.color.random2));
-            storyDescLayout.setBackgroundColor(getResources().getColor(R.color.random2));
-        }
-        if (n==2){
-            storyDesc.setBackgroundColor(getResources().getColor(R.color.random3));
-            //storyLocation.setBackgroundColor(getResources().getColor(R.color.random3));
-            storyDescLayout.setBackgroundColor(getResources().getColor(R.color.random3));
-        }
-        if(n==3) {
-            storyDesc.setBackgroundColor(getResources().getColor(R.color.random1));
-            //storyLocation.setBackgroundColor(getResources().getColor(R.color.random1));
-            storyDescLayout.setBackgroundColor(getResources().getColor(R.color.random1));
-        }
+
+        textureView = (TextureView) findViewById(R.id.screensize);
+        assert textureView != null;
+        textureView.setSurfaceTextureListener(textureListener);
 
         storyFeed = FirebaseDatabase.getInstance().getReference(Constants.FIREBASE_LOCATION_STORYFEED);
         mAuth = FirebaseAuth.getInstance();
@@ -130,9 +125,10 @@ public class StoryFeedActivity extends AppCompatActivity{
         });
         Log.v(LOG_TAG, storyId);
 
+
         storyImage.setOnTouchListener(new OnSwipeTouchListener(StoryFeedActivity.this) {
             public void onSwipeTop() {
-                if(likeFlag == 0) {
+                if(likeFlag == 0 && !storyFeedList.isEmpty()) {
                     storyLike.setBackgroundResource(R.drawable.like);
                     new BackgroundLikeTask().execute(currentKey);
                     likeFlag = 1;
@@ -193,6 +189,25 @@ public class StoryFeedActivity extends AppCompatActivity{
 
     }
 
+    TextureView.SurfaceTextureListener textureListener = new TextureView.SurfaceTextureListener() {
+        @Override
+        public void onSurfaceTextureAvailable(SurfaceTexture surface, int width, int height) {
+            screenWidth = width;
+            screenHeight = height;
+        }
+        @Override
+        public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
+
+        }
+        @Override
+        public boolean onSurfaceTextureDestroyed(SurfaceTexture surface) {
+            return false;
+        }
+        @Override
+        public void onSurfaceTextureUpdated(SurfaceTexture surface) {
+        }
+    };
+
     private void getStory(int storyNumber){
         if(storyNumber >= 0 && !storyFeedList.isEmpty()) {
             storyLike.setBackgroundResource(R.drawable.like_24px);
@@ -230,7 +245,8 @@ public class StoryFeedActivity extends AppCompatActivity{
                         @Override
                         public void onSuccess(Uri uri) {
                             String url = uri.toString();
-                            Picasso.with(getApplicationContext()).load(url).into(storyImage);
+                            Picasso.with(getApplicationContext()).load(url).resize(screenWidth,screenHeight)
+                                    .into(storyImage);
                         }
                     });
         }

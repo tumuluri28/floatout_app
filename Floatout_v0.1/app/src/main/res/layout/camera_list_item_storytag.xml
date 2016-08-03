@@ -7,11 +7,9 @@
         android:id="@+id/camera_storytag_data"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:padding="3dp"
-        android:textStyle="bold"
-        android:textSize="25dp"
-        android:textColor="@color/black"
-        />
+        android:padding="12dp"
+        android:textSize="7pt"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/storytagtext"/>
 
 </RelativeLayout>
