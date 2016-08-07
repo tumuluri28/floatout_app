@@ -70,12 +70,9 @@ public class CameraActivity extends AppCompatActivity {
     private String cameraId;
     protected CameraDevice cameraDevice;
     protected CameraCaptureSession cameraCaptureSessions;
-    protected CaptureRequest captureRequest;
     protected CaptureRequest.Builder captureRequestBuilder;
     private ImageButton takePictureButton, backButton, swapCameraButton,flashButton;
-    private Size imageDimension;
     private ImageReader imageReader;
-    private File file;
     private File mypath;
     private static final int REQUEST_CAMERA_PERMISSION = 200;
     private boolean mFlashSupported;
@@ -208,15 +205,6 @@ public class CameraActivity extends AppCompatActivity {
         }
     };
 
-    final CameraCaptureSession.CaptureCallback captureCallbackListener
-            = new CameraCaptureSession.CaptureCallback() {
-        @Override
-        public void onCaptureCompleted(CameraCaptureSession session, CaptureRequest request, TotalCaptureResult result) {
-            super.onCaptureCompleted(session, request, result);
-            Toast.makeText(CameraActivity.this, "Saved:" + file, Toast.LENGTH_SHORT).show();
-            createCameraPreview();
-        }
-    };
     protected void startBackgroundThread() {
         mBackgroundThread = new HandlerThread("Camera Background");
         mBackgroundThread.start();

@@ -1,6 +1,5 @@
 package com.floatout.android.floatout_v01.login;
 
-import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -35,8 +34,6 @@ import java.util.HashMap;
 public class CreateAccountActivity extends AppCompatActivity {
 
     private static final String LOG_TAG = CreateAccountActivity.class.getSimpleName();
-
-    private ProgressDialog mAuthProgressDialog;
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -137,14 +134,6 @@ public class CreateAccountActivity extends AppCompatActivity {
         createAccountButton = (Button) findViewById(R.id.button_create_account);
 
         signInText = (TextView) findViewById(R.id.user_sign_in);
-    }
-
-    @Override
-    protected void onResume() { super.onResume();}
-
-    @Override
-    public void onPause() {
-        super.onPause();
     }
 
     private boolean isUserNameValid(String userName){

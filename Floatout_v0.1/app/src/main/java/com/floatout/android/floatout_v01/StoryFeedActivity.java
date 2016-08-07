@@ -12,7 +12,6 @@ import android.view.TextureView;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,7 +36,6 @@ import java.util.Random;
 
 public class StoryFeedActivity extends AppCompatActivity{
 
-    private RelativeLayout storyDescLayout;
     private ImageView storyImage;
     private ImageButton storyLike,storyLocationButton;
     private TextView storyDesc,storyLocation;
@@ -300,35 +298,6 @@ public class StoryFeedActivity extends AppCompatActivity{
 
             storyFeedIdref.child(currentStoryKey).child("likes").child("users")
                     .child(uid).setValue("true");
-
-            return null;
-        }
-    }
-
-    private class BackgroundUnlikeTask extends AsyncTask<String,Void,Void>{
-        @Override
-        protected Void doInBackground(String... params) {
-            FirebaseUser user = mAuth.getCurrentUser();
-            String uid = user.getUid();
-            String currentStoryKey = params[0];
-            final DatabaseReference likesCountRef = storyFeedIdref.child(currentStoryKey)
-                    .child("likes").child("likesCount");
-            likesCountRef.runTransaction(new Transaction.Handler() {
-                @Override
-                public Transaction.Result doTransaction(MutableData currentData) {
-                    if((long) currentData.getValue() > 0){
-                        currentData.setValue((long) currentData.getValue()- 1);
-                    }
-                    return Transaction.success(currentData);
-                }
-                @Override
-                public void onComplete(DatabaseError databaseError, boolean b, DataSnapshot dataSnapshot) {
-
-                }
-            });
-            final DatabaseReference usersLikesRef = storyFeedIdref.child(currentStoryKey)
-                    .child("likes").child("users");
-            usersLikesRef.child(uid).setValue(null);
 
             return null;
         }

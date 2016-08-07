@@ -3,8 +3,6 @@ package com.floatout.android.floatout_v01;
 //import android.app.Fragment;
 
 import android.Manifest;
-import android.app.ProgressDialog;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Address;
@@ -53,8 +51,6 @@ import java.util.Locale;
  */
 public class MainActivity_Fragment extends Fragment implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    private ProgressDialog progressDialog;
-
     private ListView mStoryTagList;
     private ImageButton menu_Button, camera_button;
     private TextView storyTag;
@@ -80,16 +76,6 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
     private String uid;
     private String strLocation;
     private final String LOG_TAG = MainActivity_Fragment.class.getSimpleName();
-
-    public MainActivity_Fragment() {
-    }
-
-    public static MainActivity_Fragment newInstance() {
-        MainActivity_Fragment fragment = new MainActivity_Fragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -310,7 +296,7 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        googleApiClient.reconnect();
     }
 
     @Override
@@ -324,12 +310,6 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
     }
 
     private class GetAddressTask extends AsyncTask<Location, Void, String>{
-        Context context;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
 
         @Override
         protected String doInBackground(Location... params) {
@@ -358,12 +338,6 @@ public class MainActivity_Fragment extends Fragment implements GoogleApiClient.C
                 }
             }
             return strLocation;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            ;
         }
     }
 }

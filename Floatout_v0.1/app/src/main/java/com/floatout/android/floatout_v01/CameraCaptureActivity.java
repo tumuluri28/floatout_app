@@ -17,8 +17,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.util.Size;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -63,8 +61,7 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
     String path;
     String strLocation;
     File f;
-    private Size imageDimension;
-    ImageButton add,backtoMain,showStorytags;
+    ImageButton add,backtoMain;
     EditText description;
     Bitmap bm;
     int i;
@@ -78,8 +75,6 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
     private ArrayList<String> storyNames = new ArrayList<>();
 
     String uid;
-
-    final String LOG_TAG = MainActivity_Fragment.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -281,12 +276,6 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
             location = LocationServices.FusedLocationApi.getLastLocation(googleApiClient);
             if (location != null) {
                 new GetAddressTask().execute(location);
-                lat = location.getLatitude();
-                lon = location.getLongitude();
-                Log.v(LOG_TAG, "co-ords lat cam " + String.valueOf(lat));
-                Log.v(LOG_TAG, "co-ords lon cam " + String.valueOf(lon));
-                /*Toast.makeText(getActivity(), "this is my Toast message!!! =)",
-                        Toast.LENGTH_LONG).show();*/
             }
         }
     }
@@ -298,15 +287,10 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
+        googleApiClient.reconnect();
     }
 
     private class GetAddressTask extends AsyncTask<Location, Void, String>{
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
 
         @Override
         protected String doInBackground(Location... params) {
@@ -335,12 +319,6 @@ public class CameraCaptureActivity extends AppCompatActivity implements GoogleAp
                 }
             }
             return strLocation;
-        }
-
-        @Override
-        protected void onPostExecute(String s) {
-            super.onPostExecute(s);
-            Log.v(LOG_TAG, "came cap " + s);
         }
     }
 }

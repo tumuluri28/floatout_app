@@ -116,14 +116,6 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onResume() { super.onResume();}
-
-    @Override
-    public void onPause() {
-        super.onPause();
-    }
-
     public void grabInputData() {
         mEditTextEmailInput = (EditText) findViewById(R.id.edit_text_email);
         mEditTextPasswordInput = (EditText) findViewById(R.id.edit_text_password);

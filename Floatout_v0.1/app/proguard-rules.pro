@@ -15,3 +15,22 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+-dontwarn com.squareup.okhttp.**
+-keep class com.squareup.okhttp.** { *; }
+-keep interface com.squareup.okhttp.** { *; }
+
+-dontwarn com.firebase.ui.auth.**
+
+-keepattributes Signature
+-keepclassmembers class com.floatout.android.floatout_v01.model.** {
+  *;
+}
+
+-keepattributes Signature
+-keepattributes *Annotation*
+
+
+
+
+

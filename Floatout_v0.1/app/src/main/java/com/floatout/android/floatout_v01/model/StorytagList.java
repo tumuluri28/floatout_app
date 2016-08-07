@@ -22,9 +22,5 @@ public class StorytagList {
     public HashMap<String, String> getMain() {
         return main;
     }
-
-    public int getViews() {
-        return views;
-    }
 }
 

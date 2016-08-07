@@ -6,12 +6,9 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
-    <uses-feature
-        android:name="android.hardware.camera2"
-        android:required="true" />
-
     <application
         android:allowBackup="true"
+        android:name="android.support.multidex.MultiDexApplication"
         android:icon="@drawable/ic_whatshot_black_48dp"
         android:label="@string/app_name"
         android:supportsRtl="true"
@@ -43,7 +40,7 @@
         <activity android:name=".CameraCaptureActivity" />
         <activity android:name=".StoryFeedActivity" />
         <activity android:name=".AccountManagement" />
-        <activity android:name=".PasswordResetActivity"></activity>
+        <activity android:name=".PasswordResetActivity"/>
     </application>
 
 </manifest>
